@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace ArangoDBNetStandard.DocumentApi.Models
 {
-    public class DeleteDocumentsQuery
+    public class DeleteDocumentsQuery : RequestOptionsBase
     {
         public bool? WaitForSync { get; set; }
 
@@ -10,23 +11,14 @@ namespace ArangoDBNetStandard.DocumentApi.Models
 
         public bool? Silent { get; set; }
 
-        internal string ToQueryString()
+        protected override void PrepareQueryStringValues(IDictionary<string, string> values)
         {
-            var queryParams = new List<string>();
-            if (WaitForSync != null)
-            {
-                queryParams.Add("waitForSync=" + WaitForSync.ToString().ToLower());
-            }
-            if (ReturnOld != null)
-            {
-                queryParams.Add("returnOld=" + ReturnOld.ToString().ToLower());
-            }
-            if (Silent != null)
-            {
-                queryParams.Add("silent=" + Silent.ToString().ToLower());
-            }
-            string queryString = string.Join("&", queryParams);
-            return queryString;
+            if (WaitForSync.HasValue)
+                values.Add(nameof(WaitForSync).ToCamelCase(), WaitForSync.ToString().ToLowerInvariant());
+            if (ReturnOld.HasValue)
+                values.Add(nameof(ReturnOld).ToCamelCase(), ReturnOld.ToString().ToLowerInvariant());
+            if (Silent.HasValue)
+                values.Add(nameof(Silent).ToCamelCase(), Silent.ToString().ToLowerInvariant());
         }
     }
 }

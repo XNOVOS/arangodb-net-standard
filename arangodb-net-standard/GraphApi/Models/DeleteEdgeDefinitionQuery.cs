@@ -2,24 +2,18 @@
 
 namespace ArangoDBNetStandard.GraphApi.Models
 {
-    public class DeleteEdgeDefinitionQuery
+    public class DeleteEdgeDefinitionQuery : RequestOptionsBase
     {
         public bool? WaitForSync { get; set; }
 
         public bool? DropCollections { get; set; }
 
-        internal string ToQueryString()
+        protected override void PrepareQueryStringValues(IDictionary<string, string> values)
         {
-            List<string> query = new List<string>();
-            if (WaitForSync != null)
-            {
-                query.Add("waitForSync=" + WaitForSync.ToString().ToLower());
-            }
-            if (DropCollections != null)
-            {
-                query.Add("dropCollections=" + DropCollections.ToString().ToLower());
-            }
-            return string.Join("&", query);
+            if (WaitForSync.HasValue)
+                values.Add(nameof(WaitForSync).ToCamelCase(), WaitForSync.ToString().ToLowerInvariant());
+            if (DropCollections.HasValue)
+                values.Add(nameof(DropCollections).ToCamelCase(), DropCollections.ToString().ToLowerInvariant());
         }
     }
 }

@@ -3,6 +3,7 @@ using ArangoDBNetStandard.Serialization;
 using ArangoDBNetStandard.Transport;
 using System.Collections.Generic;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ArangoDBNetStandard.DocumentApi
@@ -12,18 +13,17 @@ namespace ArangoDBNetStandard.DocumentApi
     /// </summary>
     public class DocumentApiClient : ApiClientBase, IDocumentApiClient
     {
-        private readonly string _docApiPath = "_api/document";
-        private IApiClientTransport _client;
+        protected override string ApiRootPath => "_api/document";
 
         /// <summary>
         /// Creates an instance of <see cref="DocumentApiClient"/>
         /// using the provided transport layer and the default JSON serialization.
         /// </summary>
         /// <param name="client"></param>
-        public DocumentApiClient(IApiClientTransport client)
-            : base(new JsonNetApiClientSerialization())
+        public DocumentApiClient(IApiClientTransport transport)
+            : base(transport, new JsonNetApiClientSerialization())
         {
-            _client = client;
+            
         }
 
         /// <summary>
@@ -32,10 +32,10 @@ namespace ArangoDBNetStandard.DocumentApi
         /// </summary>
         /// <param name="client"></param>
         /// <param name="serializer"></param>
-        public DocumentApiClient(IApiClientTransport client, IApiClientSerialization serializer)
-            : base(serializer)
+        public DocumentApiClient(IApiClientTransport transport, IApiClientSerialization serializer)
+            : base(transport, serializer)
         {
-            _client = client;
+            
         }
 
         /// <summary>
@@ -44,25 +44,14 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <typeparam name="T"></typeparam>
         /// <param name="collectionName"></param>
         /// <param name="document"></param>
+        /// <param name="cancellationToken"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        public async Task<PostDocumentResponse<T>> PostDocumentAsync<T>(string collectionName, T document, PostDocumentsQuery query = null)
+        public async Task<PostDocumentResponse<T>> PostDocumentAsync<T>(string collectionName, T document,
+            PostDocumentsQuery query = null, CancellationToken cancellationToken = default)
         {
-            string uriString = _docApiPath + "/" + WebUtility.UrlEncode(collectionName);
-            if (query != null)
-            {
-                uriString += "?" + query.ToQueryString();
-            }
-            var content = GetContent(document, false, false);
-            using (var response = await _client.PostAsync(uriString, content))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    return DeserializeJsonFromStream<PostDocumentResponse<T>>(stream);
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await PostRequestAsync($"{ApiRootPath}/{WebUtility.UrlEncode(collectionName)}",
+                response => new PostDocumentResponse<T>(response), document, query, cancellationToken);
         }
 
         /// <summary>
@@ -71,25 +60,14 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <typeparam name="T"></typeparam>
         /// <param name="collectionName"></param>
         /// <param name="documents"></param>
+        /// <param name="cancellationToken"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        public async Task<PostDocumentsResponse<T>> PostDocumentsAsync<T>(string collectionName, IList<T> documents, PostDocumentsQuery query = null)
+        public async Task<PostDocumentsResponse<T>> PostDocumentsAsync<T>(string collectionName,
+            IEnumerable<T> documents, PostDocumentsQuery query = null, CancellationToken cancellationToken = default)
         {
-            string uriString = _docApiPath + "/" + WebUtility.UrlEncode(collectionName);
-            if (query != null)
-            {
-                uriString += "?" + query.ToQueryString();
-            }
-            var content = GetContent(documents, false, false);
-            using (var response = await _client.PostAsync(uriString, content))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    return DeserializeJsonFromStream<PostDocumentsResponse<T>>(stream);
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await PostRequestAsync($"{ApiRootPath}/{WebUtility.UrlEncode(collectionName)}",
+                response => new PostDocumentsResponse<T>(response), documents, query, cancellationToken);
         }
 
         /// <summary>
@@ -100,23 +78,11 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <param name="documents"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        public async Task<PostDocumentsResponse<T>> PutDocumentsAsync<T>(string collectionName, IList<T> documents, PutDocumentsQuery query = null)
+        public async Task<PostDocumentsResponse<T>> PutDocumentsAsync<T>(string collectionName,
+            IEnumerable<T> documents, PutDocumentsQuery query = null, CancellationToken cancellationToken = default)
         {
-            string uri = _docApiPath + "/" + WebUtility.UrlEncode(collectionName);
-            if (query != null)
-            {
-                uri += "?" + query.ToQueryString();
-            }
-            var content = GetContent(documents, false, false);
-            using (var response = await _client.PutAsync(uri, content))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    return DeserializeJsonFromStream<PostDocumentsResponse<T>>(stream);
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await PutRequestAsync($"{ApiRootPath}/{WebUtility.UrlEncode(collectionName)}",
+                response => new PostDocumentsResponse<T>(response), documents, query, cancellationToken);
         }
 
         /// <summary>
@@ -130,24 +96,11 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <param name="doc"></param>
         /// <param name="opts"></param>
         /// <returns></returns>
-        public async Task<PostDocumentResponse<T>> PutDocumentAsync<T>(string documentId, T doc, PutDocumentsQuery opts = null)
+        public async Task<PostDocumentResponse<T>> PutDocumentAsync<T>(string documentId, T document, PutDocumentsQuery query = null, CancellationToken cancellationToken = default)
         {
             ValidateDocumentId(documentId);
-            string uri = _docApiPath + "/" + documentId;
-            if (opts != null)
-            {
-                uri += "?" + opts.ToQueryString();
-            }
-            var content = GetContent(doc, false, false);
-            using (var response = await _client.PutAsync(uri, content))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    return DeserializeJsonFromStream<PostDocumentResponse<T>>(stream);
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await PutRequestAsync($"{ApiRootPath}/{documentId}",
+                response => new PostDocumentResponse<T>(response), document, query, cancellationToken);
         }
 
         /// <summary>
@@ -157,9 +110,11 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <param name="collectionName"></param>
         /// <param name="documentKey"></param>
         /// <returns></returns>
-        public async Task<T> GetDocumentAsync<T>(string collectionName, string documentKey)
+        public async Task<GetDocumentResponse<T>> GetDocumentAsync<T>(string collectionName, string documentKey,
+            CancellationToken cancellationToken = default)
         {
-            return await GetDocumentAsync<T>($"{WebUtility.UrlEncode(collectionName)}/{WebUtility.UrlEncode(documentKey)}");
+            return await GetDocumentAsync<T>(
+                $"{WebUtility.UrlEncode(collectionName)}/{WebUtility.UrlEncode(documentKey)}", cancellationToken);
         }
 
         /// <summary>
@@ -168,17 +123,11 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <typeparam name="T"></typeparam>
         /// <param name="documentId"></param>
         /// <returns></returns>
-        public async Task<T> GetDocumentAsync<T>(string documentId)
+        public async Task<GetDocumentResponse<T>> GetDocumentAsync<T>(string documentId, CancellationToken cancellationToken = default)
         {
             ValidateDocumentId(documentId);
-            var response = await _client.GetAsync(_docApiPath + "/" + documentId);
-            if (response.IsSuccessStatusCode)
-            {
-                var stream = await response.Content.ReadAsStreamAsync();
-                var document = DeserializeJsonFromStream<T>(stream);
-                return document;
-            }
-            throw await GetApiErrorException(response);
+            return await GetRequestAsync($"{ApiRootPath}/{documentId}",
+                response => new GetDocumentResponse<T>(response), null, cancellationToken);
         }
 
         /// <summary>
@@ -194,9 +143,11 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <param name="documentKey"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        public async Task<DeleteDocumentResponse<object>> DeleteDocumentAsync(string collectionName, string documentKey, DeleteDocumentsQuery query = null)
+        public async Task<DeleteDocumentResponse<object>> DeleteDocumentAsync(string collectionName, string documentKey,
+            DeleteDocumentsQuery query = null, CancellationToken cancellationToken = default)
         {
-            return await DeleteDocumentAsync<object>($"{WebUtility.UrlEncode(collectionName)}/{WebUtility.UrlEncode(documentKey)}", query);
+            return await DeleteDocumentAsync<object>(
+                $"{WebUtility.UrlEncode(collectionName)}/{WebUtility.UrlEncode(documentKey)}", query, cancellationToken);
         }
 
         /// <summary>
@@ -211,9 +162,10 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <param name="documentId"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        public async Task<DeleteDocumentResponse<object>> DeleteDocumentAsync(string documentId, DeleteDocumentsQuery query = null)
+        public async Task<DeleteDocumentResponse<object>> DeleteDocumentAsync(string documentId,
+            DeleteDocumentsQuery query = null, CancellationToken cancellationToken = default)
         {
-            return await DeleteDocumentAsync<object>(documentId, query);
+            return await DeleteDocumentAsync<object>(documentId, query, cancellationToken);
         }
 
         /// <summary>
@@ -230,9 +182,10 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <param name="selectors"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        public async Task<DeleteDocumentsResponse<object>> DeleteDocumentsAsync(string collectionName, IList<string> selectors, DeleteDocumentsQuery query = null)
+        public async Task<DeleteDocumentsResponse<object>> DeleteDocumentsAsync(string collectionName,
+            IEnumerable<string> selectors, DeleteDocumentsQuery query = null, CancellationToken cancellationToken = default)
         {
-            return await DeleteDocumentsAsync<object>(collectionName, selectors, query);
+            return await DeleteDocumentsAsync<object>(collectionName, selectors, query, cancellationToken);
         }
 
         /// <summary>
@@ -243,9 +196,11 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <param name="documentKey"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        public async Task<DeleteDocumentResponse<T>> DeleteDocumentAsync<T>(string collectionName, string documentKey, DeleteDocumentsQuery query = null)
+        public async Task<DeleteDocumentResponse<T>> DeleteDocumentAsync<T>(string collectionName, string documentKey, DeleteDocumentsQuery query = null, CancellationToken cancellationToken = default)
         {
-            return await DeleteDocumentAsync<T>($"{WebUtility.UrlEncode(collectionName)}/{WebUtility.UrlEncode(documentKey)}", query);
+            return await DeleteDocumentAsync<T>(
+                $"{WebUtility.UrlEncode(collectionName)}/{WebUtility.UrlEncode(documentKey)}", query,
+                cancellationToken);
         }
 
         /// <summary>
@@ -254,24 +209,12 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <param name="documentId"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        public async Task<DeleteDocumentResponse<T>> DeleteDocumentAsync<T>(string documentId, DeleteDocumentsQuery query = null)
+        public async Task<DeleteDocumentResponse<T>> DeleteDocumentAsync<T>(string documentId,
+            DeleteDocumentsQuery query = null, CancellationToken cancellationToken = default)
         {
             ValidateDocumentId(documentId);
-            string uri = _docApiPath + "/" + documentId;
-            if (query != null)
-            {
-                uri += "?" + query.ToQueryString();
-            }
-            using (var response = await _client.DeleteAsync(uri))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    var responseModel = DeserializeJsonFromStream<DeleteDocumentResponse<T>>(stream);
-                    return responseModel;
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await DeleteRequestAsync($"{ApiRootPath}/{documentId}",
+                response => new DeleteDocumentResponse<T>(response), query, cancellationToken);
         }
 
         /// <summary>
@@ -283,24 +226,11 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <param name="selectors"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        public async Task<DeleteDocumentsResponse<T>> DeleteDocumentsAsync<T>(string collectionName, IList<string> selectors, DeleteDocumentsQuery query = null)
+        public async Task<DeleteDocumentsResponse<T>> DeleteDocumentsAsync<T>(string collectionName,
+            IEnumerable<string> selectors, DeleteDocumentsQuery query = null, CancellationToken cancellationToken = default)
         {
-            string uri = _docApiPath + "/" + WebUtility.UrlEncode(collectionName);
-            if (query != null)
-            {
-                uri += "?" + query.ToQueryString();
-            }
-            var content = GetContent(selectors, false, false);
-            using (var response = await _client.DeleteAsync(uri, content))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    var responseModel = DeserializeJsonFromStream<DeleteDocumentsResponse<T>>(stream);
-                    return responseModel;
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await DeleteRequestAsync($"{ApiRootPath}/{WebUtility.UrlEncode(collectionName)}",
+                response => new DeleteDocumentsResponse<T>(response), query, selectors, cancellationToken);
         }
 
         /// <summary>
@@ -320,33 +250,22 @@ namespace ArangoDBNetStandard.DocumentApi
         /// PATCH/_api/document/{collection}
         /// </summary>
         /// <typeparam name="T">Type of the patch object used to partially update documents.</typeparam>
-        /// <typeparam name="U">Type of the returned documents, only applies when
+        /// <typeparam name="TResponse">Type of the returned documents, only applies when
         /// <see cref="PatchDocumentsQuery.ReturnNew"/> or <see cref="PatchDocumentsQuery.ReturnOld"/>
         /// are used.</typeparam>
         /// <param name="collectionName"></param>
         /// <param name="patches"></param>
+        /// <param name="cancellationToken"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        public async Task<IList<PatchDocumentsResponse<U>>> PatchDocumentsAsync<T, U>(
+        public async Task<PatchDocumentsResponse<TResponse>> PatchDocumentsAsync<TPatch, TResponse>(
             string collectionName,
-            IList<T> patches,
-            PatchDocumentsQuery query = null)
+            IEnumerable<TPatch> patches,
+            PatchDocumentsQuery query = null,
+            CancellationToken cancellationToken = default)
         {
-            string uri = _docApiPath + "/" + WebUtility.UrlEncode(collectionName);
-            if (query != null)
-            {
-                uri += "?" + query.ToQueryString();
-            }
-            var content = GetContent(patches, false, false);
-            using (var response = await _client.PatchAsync(uri, content))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    return DeserializeJsonFromStream<IList<PatchDocumentsResponse<U>>>(stream);
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await PatchRequestAsync(ApiRootPath + "/" + WebUtility.UrlEncode(collectionName),
+                response => new PatchDocumentsResponse<TResponse>(response), patches, query, cancellationToken);
         }
 
         /// <summary>
@@ -359,7 +278,7 @@ namespace ArangoDBNetStandard.DocumentApi
         /// PATCH/_api/document/{document-handle}
         /// </summary>
         /// <typeparam name="T">Type of the patch object used to partially update a document.</typeparam>
-        /// <typeparam name="U">Type of the returned document, only applies when
+        /// <typeparam name="TResponse">Type of the returned document, only applies when
         /// <see cref="PatchDocumentQuery.ReturnNew"/> or <see cref="PatchDocumentQuery.ReturnOld"/>
         /// are used.</typeparam>
         /// <param name="collectionName"></param>
@@ -367,16 +286,17 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <param name="body"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        public async Task<PatchDocumentResponse<U>> PatchDocumentAsync<T, U>(
+        public async Task<PatchDocumentResponse<TResponse>> PatchDocumentAsync<TPatch, TResponse>(
             string collectionName,
             string documentKey,
-            T body,
-            PatchDocumentQuery query = null)
+            TPatch body,
+            PatchDocumentQuery query = null,
+            CancellationToken cancellationToken = default)
         {
             string documentHandle = WebUtility.UrlEncode(collectionName) +
                 "/" + WebUtility.UrlEncode(documentKey);
 
-            return await PatchDocumentAsync<T, U>(documentHandle, body, query);
+            return await PatchDocumentAsync<TPatch, TResponse>(documentHandle, body, query, cancellationToken);
         }
 
         /// <summary>
@@ -388,35 +308,23 @@ namespace ArangoDBNetStandard.DocumentApi
         /// there.
         /// PATCH/_api/document/{document-handle}
         /// </summary>
-        /// <typeparam name="T">Type of the patch object used to partially update a document.</typeparam>
-        /// <typeparam name="U">Type of the returned document, only applies when
+        /// <typeparam name="TPatch">Type of the patch object used to partially update a document.</typeparam>
+        /// <typeparam name="TResponse">Type of the returned document, only applies when
         /// <see cref="PatchDocumentQuery.ReturnNew"/> or <see cref="PatchDocumentQuery.ReturnOld"/>
         /// are used.</typeparam>
         /// <param name="documentId"></param>
         /// <param name="body"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        public async Task<PatchDocumentResponse<U>> PatchDocumentAsync<T, U>(
+        public async Task<PatchDocumentResponse<TResponse>> PatchDocumentAsync<TPatch, TResponse>(
             string documentId,
-            T body,
-            PatchDocumentQuery query = null)
+            TPatch body,
+            PatchDocumentQuery query = null,
+            CancellationToken cancellationToken = default)
         {
             ValidateDocumentId(documentId);
-            string uriString = _docApiPath + "/" + documentId;
-            if (query != null)
-            {
-                uriString += "?" + query.ToQueryString();
-            }
-            var content = GetContent(body, false, false);
-            using (var response = await _client.PatchAsync(uriString, content))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    return DeserializeJsonFromStream<PatchDocumentResponse<U>>(stream);
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await PatchRequestAsync(ApiRootPath + "/" + documentId,
+                response => new PatchDocumentResponse<TResponse>(response), body, query, cancellationToken);
         }
 
         /// <summary>
@@ -438,9 +346,12 @@ namespace ArangoDBNetStandard.DocumentApi
         public async Task<HeadDocumentResponse> HeadDocumentAsync(
             string collectionName,
             string documentKey,
-            HeadDocumentHeader headers = null)
+            HeadDocumentHeader headers = null,
+            CancellationToken cancellationToken = default)
         {
-            return await HeadDocumentAsync($"{WebUtility.UrlEncode(collectionName)}/{WebUtility.UrlEncode(documentKey)}", headers);
+            return await HeadDocumentAsync(
+                $"{WebUtility.UrlEncode(collectionName)}/{WebUtility.UrlEncode(documentKey)}", headers,
+                cancellationToken);
         }
 
         /// <summary>
@@ -459,26 +370,18 @@ namespace ArangoDBNetStandard.DocumentApi
         /// 412: is returned if an “If-Match” header is given and the found document has a different version. The response will also contain the found document’s current revision in the Etag header.
         /// </remarks>
         /// <returns></returns>
-        public async Task<HeadDocumentResponse> HeadDocumentAsync(string documentId, HeadDocumentHeader headers = null)
+        public async Task<HeadDocumentResponse> HeadDocumentAsync(string documentId, HeadDocumentHeader headers = null, CancellationToken cancellationToken = default)
         {
             ValidateDocumentId(documentId);
-            string uri = _docApiPath + "/" + documentId;
-            WebHeaderCollection headerCollection;
-            if (headers == null)
+            string uri = ApiRootPath + "/" + documentId;
+            WebHeaderCollection headerCollection = headers == null ? new WebHeaderCollection() : headers.ToWebHeaderCollection();
+            using (var response = await Transport.HeadAsync(uri, headerCollection, cancellationToken))
             {
-                headerCollection = new WebHeaderCollection();
-            }
-            else
-            {
-                headerCollection = headers.ToWebHeaderCollection();
-            }
-            using (var response = await _client.HeadAsync(uri, headerCollection))
-            {
-                return new HeadDocumentResponse
+                if (response.IsSuccessStatusCode)
                 {
-                    Code = (HttpStatusCode)response.StatusCode,
-                    Etag = response.Headers.ETag
-                };
+                    return new HeadDocumentResponse(response.StatusCode, response.Headers.ETag);
+                }
+                return new HeadDocumentResponse(response.Headers.ETag, new ApiResponse(true, response.StatusCode, null, null));
             }
         }
     }

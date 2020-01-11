@@ -11,5 +11,11 @@ namespace ArangoDBNetStandard.DocumentApi.Models
         public int ErrorNum { get; set; }
 
         public HttpStatusCode Code { get; set; }
+
+        
+
+        public DeleteDocumentsDocumentResponse(ApiResponse errorDetails) : base(errorDetails)
+        {
+        }
     }
 }

@@ -6,13 +6,13 @@ namespace ArangoDBNetStandard
     [Serializable]
     public class ApiErrorException : Exception
     {
-        public ApiErrorResponse ApiError { get; set; }
+        public ApiResponse ApiError { get; set; }
 
         public ApiErrorException()
         {
         }
 
-        public ApiErrorException(ApiErrorResponse error) : base(error.ErrorMessage)
+        public ApiErrorException(ApiResponse error) : base(error.ErrorMessage)
         {
             ApiError = error;
         }

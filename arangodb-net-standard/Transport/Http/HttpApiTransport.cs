@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ArangoDBNetStandard.Transport.Http
@@ -169,9 +170,9 @@ namespace ArangoDBNetStandard.Transport.Http
         /// </summary>
         /// <param name="requestUri"></param>
         /// <returns></returns>
-        public async Task<IApiClientResponse> DeleteAsync(string requestUri)
+        public async Task<IApiClientResponse> DeleteAsync(string requestUri, CancellationToken cancellationToken = default)
         {
-            var response = await _client.DeleteAsync(requestUri);
+            var response = await _client.DeleteAsync(requestUri, cancellationToken);
             return new HttpApiClientResponse(response);
         }
 
@@ -181,14 +182,14 @@ namespace ArangoDBNetStandard.Transport.Http
         /// <param name="requestUri"></param>
         /// <param name="content"></param>
         /// <returns></returns>
-        public async Task<IApiClientResponse> DeleteAsync(string requestUri, byte[] content)
+        public async Task<IApiClientResponse> DeleteAsync(string requestUri, byte[] content, CancellationToken cancellationToken = default)
         {
             var request = new HttpRequestMessage(HttpMethod.Delete, requestUri)
             {
                 Content = new ByteArrayContent(content)
             };
             request.Content.Headers.ContentType = new MediaTypeHeaderValue(_contentTypeMap[_contentType]);
-            var response = await _client.SendAsync(request);
+            var response = await _client.SendAsync(request, cancellationToken);
             return new HttpApiClientResponse(response);
         }
 
@@ -198,11 +199,11 @@ namespace ArangoDBNetStandard.Transport.Http
         /// <param name="requestUri"></param>
         /// <param name="content">The content of the request, must not be null.</param>
         /// <returns></returns>
-        public async Task<IApiClientResponse> PostAsync(string requestUri, byte[] content)
+        public async Task<IApiClientResponse> PostAsync(string requestUri, byte[] content, CancellationToken cancellationToken = default)
         {
             var httpContent = new ByteArrayContent(content);
             httpContent.Headers.ContentType = new MediaTypeHeaderValue(_contentTypeMap[_contentType]);
-            var response = await _client.PostAsync(requestUri, httpContent);
+            var response = await _client.PostAsync(requestUri, httpContent, cancellationToken);
             return new HttpApiClientResponse(response);
         }
 
@@ -212,11 +213,11 @@ namespace ArangoDBNetStandard.Transport.Http
         /// <param name="requestUri"></param>
         /// <param name="content">The content of the request, must not be null.</param>
         /// <returns></returns>
-        public async Task<IApiClientResponse> PutAsync(string requestUri, byte[] content)
+        public async Task<IApiClientResponse> PutAsync(string requestUri, byte[] content, CancellationToken cancellationToken = default)
         {
             var httpContent = new ByteArrayContent(content);
             httpContent.Headers.ContentType = new MediaTypeHeaderValue(_contentTypeMap[_contentType]);
-            var response = await _client.PutAsync(requestUri, httpContent);
+            var response = await _client.PutAsync(requestUri, httpContent, cancellationToken);
             return new HttpApiClientResponse(response);
         }
 
@@ -225,9 +226,9 @@ namespace ArangoDBNetStandard.Transport.Http
         /// </summary>
         /// <param name="requestUri">The content of the request, must not be null.</param>
         /// <returns></returns>
-        public async Task<IApiClientResponse> GetAsync(string requestUri)
+        public async Task<IApiClientResponse> GetAsync(string requestUri, CancellationToken cancellationToken = default)
         {
-            var response = await _client.GetAsync(requestUri);
+            var response = await _client.GetAsync(requestUri, cancellationToken);
             return new HttpApiClientResponse(response);
         }
 
@@ -237,7 +238,7 @@ namespace ArangoDBNetStandard.Transport.Http
         /// <param name="requestUri"></param>
         /// <param name="content">The content of the request, must not be null.</param>
         /// <returns></returns>
-        public async Task<IApiClientResponse> PatchAsync(string requestUri, byte[] content)
+        public async Task<IApiClientResponse> PatchAsync(string requestUri, byte[] content, CancellationToken cancellationToken = default)
         {
             var method = new HttpMethod("PATCH");
             var request = new HttpRequestMessage(method, requestUri)
@@ -245,7 +246,7 @@ namespace ArangoDBNetStandard.Transport.Http
                 Content = new ByteArrayContent(content)
             };
             request.Content.Headers.ContentType = new MediaTypeHeaderValue(_contentTypeMap[_contentType]);
-            var response = await _client.SendAsync(request);
+            var response = await _client.SendAsync(request, cancellationToken);
             return new HttpApiClientResponse(response);
         }
 
@@ -257,7 +258,8 @@ namespace ArangoDBNetStandard.Transport.Http
         /// <returns></returns>
         public async Task<IApiClientResponse> HeadAsync(
             string requestUri,
-            WebHeaderCollection webHeaderCollection = null)
+            WebHeaderCollection webHeaderCollection = null,
+            CancellationToken cancellationToken = default)
         {
             var request = new HttpRequestMessage(HttpMethod.Head, requestUri);
 
@@ -268,7 +270,7 @@ namespace ArangoDBNetStandard.Transport.Http
                     request.Headers.Add(key, webHeaderCollection[key]);
                 }
             }
-            var response = await _client.SendAsync(request);
+            var response = await _client.SendAsync(request, cancellationToken);
             return new HttpApiClientResponse(response);
         }
 

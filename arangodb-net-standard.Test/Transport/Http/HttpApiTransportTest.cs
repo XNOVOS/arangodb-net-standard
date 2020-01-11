@@ -11,7 +11,7 @@ namespace ArangoDBNetStandardTest.Transport.Http
 {
     public class HttpApiTransportTest: IClassFixture<HttpApiTransportTestFixture>
     {
-        private HttpApiTransportTestFixture _fixture;
+        private readonly HttpApiTransportTestFixture _fixture;
 
         public HttpApiTransportTest(HttpApiTransportTestFixture fixture)
         {
@@ -62,7 +62,7 @@ namespace ArangoDBNetStandardTest.Transport.Http
                 var databaseApi = new DatabaseApiClient(transport);
 
                 var userDatabasesResponse = await databaseApi.GetUserDatabasesAsync();
-                Assert.NotEmpty(userDatabasesResponse.Result);
+                Assert.NotEmpty(userDatabasesResponse.Results);
             }
         }
 
@@ -101,7 +101,7 @@ namespace ArangoDBNetStandardTest.Transport.Http
             {
                 var databaseApi = new DatabaseApiClient(transport);
                 var userDatabasesResponse = await databaseApi.GetUserDatabasesAsync();
-                Assert.NotEmpty(userDatabasesResponse.Result);
+                Assert.NotEmpty(userDatabasesResponse.Results);
             }
         }
     }

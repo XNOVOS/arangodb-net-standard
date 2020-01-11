@@ -1,4 +1,5 @@
-﻿using ArangoDBNetStandard.GraphApi.Models;
+﻿using System.Threading;
+using ArangoDBNetStandard.GraphApi.Models;
 using System.Threading.Tasks;
 
 namespace ArangoDBNetStandard.GraphApi
@@ -16,7 +17,8 @@ namespace ArangoDBNetStandard.GraphApi
         /// <returns></returns>
         Task<PostGraphResponse> PostGraphAsync(
           PostGraphBody postGraphBody,
-          PostGraphQuery query = null);
+          PostGraphQuery query = null,
+          CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Lists all graphs stored in this database.
@@ -27,7 +29,7 @@ namespace ArangoDBNetStandard.GraphApi
         /// in ArangoDB 4.5.2 and below, in which case you can use <see cref="GraphResult._key"/> instead.
         /// </remarks>
         /// <returns></returns>
-        Task<GetGraphsResponse> GetGraphsAsync();
+        Task<GetGraphsResponse> GetGraphsAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Deletes an existing graph object by name.
@@ -125,7 +127,8 @@ namespace ArangoDBNetStandard.GraphApi
         Task<DeleteEdgeDefinitionResponse> DeleteEdgeDefinitionAsync(
           string graphName,
           string collectionName,
-          DeleteEdgeDefinitionQuery query = null);
+          DeleteEdgeDefinitionQuery query = null,
+          CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Removes a vertex collection from the graph and optionally deletes the collection,
@@ -242,8 +245,8 @@ namespace ArangoDBNetStandard.GraphApi
         /// Updates the data of the specific vertex in the collection.
         /// PATCH/_api/gharial/{graph}/vertex/{collection}/{vertex}
         /// </summary>
-        /// <typeparam name="T">Type of the patch object</typeparam>
-        /// <typeparam name="U">Type of the returned document, only applies when
+        /// <typeparam name="TPatch">Type of the patch object</typeparam>
+        /// <typeparam name="TReturned">Type of the returned document, only applies when
         /// <see cref="PatchVertexQuery.ReturnNew"/> or <see cref="PatchVertexQuery.ReturnOld"/>
         /// are used.</typeparam>
         /// <param name="graphName"></param>
@@ -252,11 +255,11 @@ namespace ArangoDBNetStandard.GraphApi
         /// <param name="body"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        Task<PatchVertexResponse<U>> PatchVertexAsync<T, U>(
+        Task<PatchVertexResponse<TReturned>> PatchVertexAsync<TPatch, TReturned>(
           string graphName,
           string collectionName,
           string vertexKey,
-          T body,
+          TPatch body,
           PatchVertexQuery query = null);
 
         /// <summary>
@@ -297,19 +300,19 @@ namespace ArangoDBNetStandard.GraphApi
         /// Updates the data of the specific edge in the collection.
         /// PATCH/_api/gharial/{graph}/edge/{collection}/{edge}
         /// </summary>
-        /// <typeparam name="T">Type of the returned edge document, when ReturnOld or ReturnNew query params are used.</typeparam>
-        /// <typeparam name="U">Type of the patch object used to perform a partial update of the edge document.</typeparam>
+        /// <typeparam name="TPatch">Type of the returned edge document, when ReturnOld or ReturnNew query params are used.</typeparam>
+        /// <typeparam name="TReturned">Type of the patch object used to perform a partial update of the edge document.</typeparam>
         /// <param name="graphName"></param>
         /// <param name="collectionName"></param>
         /// <param name="edgeKey"></param>
         /// <param name="edge"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        Task<PatchEdgeResponse<T>> PatchEdgeAsync<T, U>(
+        Task<PatchEdgeResponse<TPatch>> PatchEdgeAsync<TPatch, TReturned>(
           string graphName,
           string collectionName,
           string edgeKey,
-          U edge,
+          TReturned edge,
           PatchEdgeQuery query = null);
 
         /// <summary>

@@ -1,25 +1,21 @@
-﻿namespace ArangoDBNetStandard.GraphApi.Models
+﻿using System.Collections.Generic;
+
+namespace ArangoDBNetStandard.GraphApi.Models
 {
     /// <summary>
     /// Represents query parameters used when creating a new graph.
     /// </summary>
-    public class PostGraphQuery
+    public class PostGraphQuery : RequestOptionsBase
     {
         /// <summary>
         /// Whether the request should wait until synced to disk.
         /// </summary>
         public bool? WaitForSync { get; set; }
 
-        internal string ToQueryString()
+        protected override void PrepareQueryStringValues(IDictionary<string, string> values)
         {
-            if (WaitForSync != null)
-            {
-                return "waitForSync=" + WaitForSync.ToString().ToLower();
-            }
-            else
-            {
-                return "";
-            }
+            if (WaitForSync.HasValue)
+                values.Add(nameof(WaitForSync).ToCamelCase(), WaitForSync.ToString().ToLowerInvariant());
         }
     }
 }

@@ -1,37 +1,57 @@
 ﻿using System.Net;
+using ArangoDBNetStandard.DocumentApi.Models;
+using Newtonsoft.Json;
 
 namespace ArangoDBNetStandard.CollectionApi.Models
 {
-    public class PutCollectionPropertyResponse
+    public class PutCollectionPropertyResponse : ResponseBase
     {
-        public string Id { get; set; }
+        [JsonConstructor]
+        public PutCollectionPropertyResponse(string id, string name, bool waitForSync, long journalSize, int status, int type, bool isSystem, bool isVolatile, bool doCompact, CollectionKeyOptions keyOptions, string globallyUniqueId, bool error, HttpStatusCode code, string statusString, int indexBuckets) : base(new ApiResponse(error, code, null, null))
+        {
+            Id = id;
+            Name = name;
+            WaitForSync = waitForSync;
+            JournalSize = journalSize;
+            Status = status;
+            Type = type;
+            IsSystem = isSystem;
+            IsVolatile = isVolatile;
+            DoCompact = doCompact;
+            KeyOptions = keyOptions;
+            GloballyUniqueId = globallyUniqueId;
+            StatusString = statusString;
+            IndexBuckets = indexBuckets;
+        }
 
-        public string Name { get; set; }
+        public string Id { get; }
 
-        public bool WaitForSync { get; set; }
+        public string Name { get; }
 
-        public long JournalSize { get; set; }
+        public bool WaitForSync { get; }
 
-        public int Status { get; set; }
+        public long JournalSize { get; }
 
-        public int Type { get; set; }
+        public int Status { get; }
 
-        public bool IsSystem { get; set; }
+        public int Type { get; }
 
-        public bool IsVolatile { get; set; }
+        public bool IsSystem { get; }
 
-        public bool DoCompact { get; set; }
+        public bool IsVolatile { get; }
 
-        public CollectionKeyOptions KeyOptions { get; set; }
+        public bool DoCompact { get; }
 
-        public string GloballyUniqueId { get; set; }
+        public CollectionKeyOptions KeyOptions { get; }
 
-        public bool Error { get; set; }
+        public string GloballyUniqueId { get; }
 
-        public HttpStatusCode Code { get; set; }
+        public string StatusString { get; }
 
-        public string StatusString { get; set; }
+        public int IndexBuckets { get; }
 
-        public int IndexBuckets { get; set; }
+        public PutCollectionPropertyResponse(ApiResponse errorDetails) : base(errorDetails)
+        {
+        }
     }
 }

@@ -9,7 +9,7 @@ namespace ArangoDBNetStandardTest.TransactionApi
 {
     public class TransactionApiClientTest: IClassFixture<TransactionApiClientTestFixture>
     {
-        private ArangoDBClient _adb;
+        private readonly ArangoDBClient _adb;
 
         public TransactionApiClientTest(TransactionApiClientTestFixture fixture)
         {
@@ -21,11 +21,11 @@ namespace ArangoDBNetStandardTest.TransactionApi
         [Fact]
         public async Task PostTransaction_ShouldSucceed()
         {
-            await _adb.Document.PostDocumentAsync("TestCollection2",
+            _ = await _adb.Document.PostDocumentAsync("TestCollection2",
                 new
                 {
                     _key = "names",
-                     value = new[] { "world", "love" }
+                    value = new[] { "world", "love" }
                 });
 
             var result = await _adb.Transaction.PostTransactionAsync<List<DocumentBase>>(new PostTransactionBody
@@ -54,8 +54,8 @@ namespace ArangoDBNetStandardTest.TransactionApi
             var doc1 = await _adb.Document.GetDocumentAsync<dynamic>(result.Result[0]._id);
             var doc2 = await _adb.Document.GetDocumentAsync<dynamic>(result.Result[1]._id);
 
-            Assert.Equal("Hello, world", (string)doc1.message);
-            Assert.Equal("Hello, love", (string)doc2.message);
+            Assert.Equal("Hello, world", (string)doc1.Document.message);
+            Assert.Equal("Hello, love", (string)doc2.Document.message);
         }
 
         [Fact]

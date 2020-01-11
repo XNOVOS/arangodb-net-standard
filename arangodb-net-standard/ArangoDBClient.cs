@@ -18,7 +18,7 @@ namespace ArangoDBNetStandard
     /// </summary>
     public class ArangoDBClient : IDisposable
     {
-        private IApiClientTransport _transport;
+        private readonly IApiClientTransport _transport;
 
         public AuthApiClient Auth { get; private set; }
 

@@ -1,10 +1,34 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System.IO;
 using System.Text;
+using ArangoDBNetStandard.CollectionApi.Models;
+using ArangoDBNetStandard.DocumentApi.Models;
+using Newtonsoft.Json.Linq;
 
 namespace ArangoDBNetStandard.Serialization
 {
+    public class GetCollectionsResponseConverter : JsonConverter<GetCollectionsResponse>
+    {
+        public override bool CanWrite => false;
+
+        public override void WriteJson(JsonWriter writer, GetCollectionsResponse value, JsonSerializer serializer)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override GetCollectionsResponse ReadJson(JsonReader reader, Type objectType, GetCollectionsResponse existingValue,
+            bool hasExistingValue, JsonSerializer serializer)
+        {
+            JObject jObject = JObject.Load(reader);
+            if (jObject.ContainsKey("result"))
+            {
+                 //jObject["result"];
+            }
+            return new GetCollectionsResponse(null);
+        }
+    }
     /// <summary>
     /// Implements a <see cref="IApiClientSerialization"/> that uses Json.NET.
     /// </summary>
@@ -27,7 +51,36 @@ namespace ArangoDBNetStandard.Serialization
             using (var sr = new StreamReader(stream))
             using (var jtr = new JsonTextReader(sr))
             {
-                var js = new JsonSerializer();
+                var js = CustomizeJsonSerializerForDeserialization(new JsonSerializer());
+
+                if (typeof(T).IsGenericType)
+                {
+                    Type genericTypeDefinition = typeof(T).GetGenericTypeDefinition();
+                    if (genericTypeDefinition == typeof(PostDocumentsResponse<>))
+                    {
+                        Type classType = typeof(T).GetGenericArguments()[0];
+                        JsonConverter responseConverter = Activator.CreateInstance(typeof(PostDocumentsResponseJsonConverter<>).MakeGenericType(classType)) as JsonConverter;
+                        js.Converters.Add(responseConverter);
+                    }
+                    else if (genericTypeDefinition == typeof(DeleteDocumentsResponse<>))
+                    {
+                        Type classType = typeof(T).GetGenericArguments()[0];
+                        JsonConverter responseConverter = Activator.CreateInstance(typeof(DeleteDocumentsResponseJsonConverter<>).MakeGenericType(classType)) as JsonConverter;
+                        js.Converters.Add(responseConverter);
+                    }
+                    else if (genericTypeDefinition == typeof(PatchDocumentsResponse<>))
+                    {
+                        Type classType = typeof(T).GetGenericArguments()[0];
+                        JsonConverter responseConverter = Activator.CreateInstance(typeof(PatchDocumentsResponseJsonConverter<>).MakeGenericType(classType)) as JsonConverter;
+                        js.Converters.Add(responseConverter);
+                    }
+                    else if (genericTypeDefinition == typeof(GetDocumentResponse<>))
+                    {
+                        Type classType = typeof(T).GetGenericArguments()[0];
+                        JsonConverter responseConverter = Activator.CreateInstance(typeof(GetDocumentResponseJsonConverter<>).MakeGenericType(classType)) as JsonConverter;
+                        js.Converters.Add(responseConverter);
+                    }
+                }
 
                 T result = js.Deserialize<T>(jtr);
 
@@ -59,9 +112,20 @@ namespace ArangoDBNetStandard.Serialization
                 jsonSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
             }
 
+            jsonSettings = CustomizeJsonSerializerSettingsForSerialization(jsonSettings);
+
             string json = JsonConvert.SerializeObject(item, jsonSettings);
 
             return Encoding.UTF8.GetBytes(json);
+        }
+
+        protected virtual JsonSerializerSettings CustomizeJsonSerializerSettingsForSerialization(JsonSerializerSettings currentSettings)
+        {
+            return currentSettings;
+        }
+        protected virtual JsonSerializer CustomizeJsonSerializerForDeserialization(JsonSerializer currentSerializer)
+        {
+            return currentSerializer;
         }
     }
 }

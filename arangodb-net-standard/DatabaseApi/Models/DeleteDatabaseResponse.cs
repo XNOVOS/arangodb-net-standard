@@ -1,22 +1,25 @@
 ﻿using System.Net;
+using ArangoDBNetStandard.DocumentApi.Models;
+using Newtonsoft.Json;
 
 namespace ArangoDBNetStandard.DatabaseApi.Models
 {
-    public class DeleteDatabaseResponse
+    public class DeleteDatabaseResponse : ResponseBase
     {
-        /// <summary>
-        /// HttpStatus
-        /// </summary>
-        public HttpStatusCode Code { get; set; }
+        [JsonConstructor]
+        public DeleteDatabaseResponse(bool error, HttpStatusCode code, bool result) : base(
+            new ApiResponse(error, code, null, null))
+        {
+            Result = result;
+        }
 
         /// <summary>
-        /// True if the database was deleted, otherwise see <see cref="Code"/>
+        /// Indicates that the database was created. Always true.
         /// </summary>
-        public bool Result { get; set; }
+        public bool Result { get; }
 
-        /// <summary>
-        /// Error specified in Arango Docs
-        /// </summary>
-        public bool Error { get; set; }
+        public DeleteDatabaseResponse(ApiResponse errorDetails) : base(errorDetails)
+        {
+        }
     }
 }

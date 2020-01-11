@@ -2,24 +2,23 @@
 using ArangoDBNetStandard.Serialization;
 using ArangoDBNetStandard.Transport;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ArangoDBNetStandard.DatabaseApi
 {
     public class DatabaseApiClient : ApiClientBase, IDatabaseApiClient
     {
-        private IApiClientTransport _client;
-        private readonly string _databaseApiPath = "_api/database";
+        protected override string ApiRootPath => "_api/database";
 
         /// <summary>
         /// Creates an instance of <see cref="DatabaseApiClient"/>
         /// using the provided transport layer and the default JSON serialization.
         /// </summary>
         /// <param name="client"></param>
-        public DatabaseApiClient(IApiClientTransport client)
-            : base(new JsonNetApiClientSerialization())
+        public DatabaseApiClient(IApiClientTransport transport)
+            : base(transport, new JsonNetApiClientSerialization())
         {
-            _client = client;
         }
 
         /// <summary>
@@ -28,10 +27,9 @@ namespace ArangoDBNetStandard.DatabaseApi
         /// </summary>
         /// <param name="client"></param>
         /// <param name="serializer"></param>
-        public DatabaseApiClient(IApiClientTransport client, IApiClientSerialization serializer)
-            : base(serializer)
+        public DatabaseApiClient(IApiClientTransport transport, IApiClientSerialization serializer)
+            : base(transport, serializer)
         {
-            _client = client;
         }
 
         /// <summary>
@@ -40,18 +38,10 @@ namespace ArangoDBNetStandard.DatabaseApi
         /// </summary>
         /// <param name="request">The parameters required by this endpoint.</param>
         /// <returns></returns>
-        public async Task<PostDatabaseResponse> PostDatabaseAsync(PostDatabaseBody request)
+        public async Task<PostDatabaseResponse> PostDatabaseAsync(PostDatabaseBody request, CancellationToken cancellationToken = default)
         {
-            var content = GetContent(request, true, true);
-            using (var response = await _client.PostAsync(_databaseApiPath, content))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    return DeserializeJsonFromStream<PostDatabaseResponse>(stream);
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await PostRequestAsync(ApiRootPath, response => new PostDatabaseResponse(response), request, null,
+                cancellationToken);
         }
 
         /// <summary>
@@ -61,17 +51,10 @@ namespace ArangoDBNetStandard.DatabaseApi
         /// </summary>
         /// <param name="databaseName"></param>
         /// <returns></returns>
-        public async Task<DeleteDatabaseResponse> DeleteDatabaseAsync(string databaseName)
+        public async Task<DeleteDatabaseResponse> DeleteDatabaseAsync(string databaseName, CancellationToken cancellationToken = default)
         {
-            using (var response = await _client.DeleteAsync(_databaseApiPath + "/" + WebUtility.UrlEncode(databaseName)))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    return DeserializeJsonFromStream<DeleteDatabaseResponse>(stream);
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await DeleteRequestAsync($"{ApiRootPath}/{WebUtility.UrlEncode(databaseName)}",
+                response => new DeleteDatabaseResponse(response), null, cancellationToken);
         }
 
         /// <summary>
@@ -83,51 +66,33 @@ namespace ArangoDBNetStandard.DatabaseApi
         /// available for the current user.
         /// </remarks>
         /// <returns></returns>
-        public async Task<GetDatabasesResponse> GetDatabasesAsync()
+        public async Task<GetDatabasesResponse> GetDatabasesAsync(CancellationToken cancellationToken = default)
         {
-            using (var response = await _client.GetAsync(_databaseApiPath))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    return DeserializeJsonFromStream<GetDatabasesResponse>(stream);
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await GetRequestAsync(ApiRootPath, response => new GetDatabasesResponse(response), null,
+                cancellationToken);
         }
 
         /// <summary>
         /// Retrieves the list of all databases the current user can access.
         /// </summary>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<GetDatabasesResponse> GetUserDatabasesAsync()
+        public async Task<GetDatabasesResponse> GetUserDatabasesAsync(CancellationToken cancellationToken = default)
         {
-            using (var response = await _client.GetAsync(_databaseApiPath + "/user"))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    return DeserializeJsonFromStream<GetDatabasesResponse>(stream);
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await GetRequestAsync(ApiRootPath + "/user", response => new GetDatabasesResponse(response), null,
+                cancellationToken);
         }
 
         /// <summary>
         /// Retrieves information about the current database.
         /// </summary>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<GetCurrentDatabaseInfoResponse> GetCurrentDatabaseInfoAsync()
+        public async Task<GetCurrentDatabaseInfoResponse> GetCurrentDatabaseInfoAsync(
+            CancellationToken cancellationToken = default)
         {
-            using (var response = await _client.GetAsync(_databaseApiPath + "/current"))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    return DeserializeJsonFromStream<GetCurrentDatabaseInfoResponse>(stream);
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await GetRequestAsync(ApiRootPath + "/current",
+                response => new GetCurrentDatabaseInfoResponse(response), null, cancellationToken);
         }
     }
 }

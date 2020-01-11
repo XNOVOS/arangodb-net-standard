@@ -1,25 +1,20 @@
 ﻿using System.Net;
+using Newtonsoft.Json;
 
 namespace ArangoDBNetStandard.GraphApi.Models
 {
     /// <summary>
     /// Represents a response containing information about the newly created graph.
     /// </summary>
-    public class PostGraphResponse
+    public class PostGraphResponse : GraphResponse
     {
-        /// <summary>
-        /// Indicates whether an error occurred (false in this case).
-        /// </summary>
-        public bool Error { get; set; }
+        [JsonConstructor]
+        public PostGraphResponse(HttpStatusCode code, GraphResult graph) : base(code, graph)
+        {
+        }
 
-        /// <summary>
-        /// The HTTP status code.
-        /// </summary>
-        public HttpStatusCode Code { get; set; }
-
-        /// <summary>
-        /// The information about the newly created graph.
-        /// </summary>
-        public GraphResult Graph { get; set; }
+        public PostGraphResponse(ApiResponse errorDetails) : base(errorDetails)
+        {
+        }
     }
 }

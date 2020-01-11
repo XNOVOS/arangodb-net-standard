@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Net;
+using ArangoDBNetStandard.DocumentApi.Models;
+using Newtonsoft.Json;
 
 namespace ArangoDBNetStandard.DatabaseApi.Models
 {
@@ -7,21 +9,21 @@ namespace ArangoDBNetStandard.DatabaseApi.Models
     /// Represents the content of the response returned
     /// by an endpoint that gets the list of databases.
     /// </summary>
-    public class GetDatabasesResponse
+    public class GetDatabasesResponse : ResponseBase
     {
-        /// <summary>
-        /// Indicates whether an error occurred (false in this case).
-        /// </summary>
-        public bool Error { get; set; }
-
-        /// <summary>
-        /// The HTTP status code.
-        /// </summary>
-        public HttpStatusCode Code { get; set; }
-
         /// <summary>
         /// The list of databases.
         /// </summary>
-        public IEnumerable<string> Result { get; set; }
+        public IReadOnlyList<string> Results { get; }
+
+        public GetDatabasesResponse(ApiResponse errorDetails) : base(errorDetails)
+        {
+        }
+
+        [JsonConstructor]
+        public GetDatabasesResponse(bool error, HttpStatusCode code, IEnumerable<string> result) : base(new ApiResponse(error, code, null, null))
+        {
+            Results = new List<string>(result).AsReadOnly();
+        }
     }
 }

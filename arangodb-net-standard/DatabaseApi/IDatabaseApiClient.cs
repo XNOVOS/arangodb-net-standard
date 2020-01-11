@@ -1,4 +1,5 @@
-﻿using ArangoDBNetStandard.DatabaseApi.Models;
+﻿using System.Threading;
+using ArangoDBNetStandard.DatabaseApi.Models;
 using System.Threading.Tasks;
 
 namespace ArangoDBNetStandard.DatabaseApi
@@ -14,7 +15,7 @@ namespace ArangoDBNetStandard.DatabaseApi
         /// </summary>
         /// <param name="request">The parameters required by this endpoint.</param>
         /// <returns></returns>
-        Task<PostDatabaseResponse> PostDatabaseAsync(PostDatabaseBody request);
+        Task<PostDatabaseResponse> PostDatabaseAsync(PostDatabaseBody request, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Delete a database. Dropping a database is only possible from within the _system database.
@@ -23,7 +24,7 @@ namespace ArangoDBNetStandard.DatabaseApi
         /// </summary>
         /// <param name="databaseName"></param>
         /// <returns></returns>
-        Task<DeleteDatabaseResponse> DeleteDatabaseAsync(string databaseName);
+        Task<DeleteDatabaseResponse> DeleteDatabaseAsync(string databaseName, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Retrieves the list of all existing databases.
@@ -34,18 +35,20 @@ namespace ArangoDBNetStandard.DatabaseApi
         /// available for the current user.
         /// </remarks>
         /// <returns></returns>
-        Task<GetDatabasesResponse> GetDatabasesAsync();
+        Task<GetDatabasesResponse> GetDatabasesAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Retrieves the list of all databases the current user can access.
         /// </summary>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<GetDatabasesResponse> GetUserDatabasesAsync();
+        Task<GetDatabasesResponse> GetUserDatabasesAsync(CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves information about the current database.
         /// </summary>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<GetCurrentDatabaseInfoResponse> GetCurrentDatabaseInfoAsync();
+        Task<GetCurrentDatabaseInfoResponse> GetCurrentDatabaseInfoAsync(CancellationToken cancellationToken);
     }
 }

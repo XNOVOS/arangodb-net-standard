@@ -1,33 +1,51 @@
 ﻿using System.Net;
+using ArangoDBNetStandard.DocumentApi.Models;
+using Newtonsoft.Json;
 
 namespace ArangoDBNetStandard.CollectionApi.Models
 {
-    public class GetCollectionCountResponse
+    public class GetCollectionCountResponse : ResponseBase
     {
-        public bool Error { get; set; }
+        [JsonConstructor]
+        public GetCollectionCountResponse(bool error, HttpStatusCode code, bool cacheEnabled, CollectionKeyOptions keyOptions, int count, bool isSystem, string globallyUniqueId, string id, string name, int status, string statusString, int type, bool waitForSync) : base(new ApiResponse(error, code, null, null))
+        {
+            CacheEnabled = cacheEnabled;
+            KeyOptions = keyOptions;
+            Count = count;
+            IsSystem = isSystem;
+            GloballyUniqueId = globallyUniqueId;
+            Id = id;
+            Name = name;
+            Status = status;
+            StatusString = statusString;
+            Type = type;
+            WaitForSync = waitForSync;
+        }
 
-        public HttpStatusCode Code { get; set; }
+        public bool CacheEnabled { get; }
 
-        public bool CacheEnabled { get; set; }
+        public CollectionKeyOptions KeyOptions { get; }
 
-        public CollectionKeyOptions KeyOptions { get; set; }
+        public int Count { get; }
 
-        public int Count { get; set; }
+        public bool IsSystem { get; }
 
-        public bool IsSystem { get; set; }
+        public string GloballyUniqueId { get; }
 
-        public string GloballyUniqueId { get; set; }
+        public string Id { get; }
 
-        public string Id { get; set; }
+        public string Name { get; }
 
-        public string Name { get; set; }
+        public int Status { get; }
 
-        public int Status { get; set; }
+        public string StatusString { get; }
 
-        public string StatusString { get; set; }
+        public int Type { get; }
 
-        public int Type { get; set; }
+        public bool WaitForSync { get; }
 
-        public bool WaitForSync { get; set; }
+        public GetCollectionCountResponse(ApiResponse errorDetails) : base(errorDetails)
+        {
+        }
     }
 }

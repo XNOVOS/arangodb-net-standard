@@ -1,5 +1,6 @@
 ﻿using ArangoDBNetStandard.CursorApi.Models;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ArangoDBNetStandard.CursorApi
@@ -30,14 +31,16 @@ namespace ArangoDBNetStandard.CursorApi
                 long? batchSize = null,
                 bool? cache = null,
                 long? memoryLimit = null,
-                int? ttl = null);
+                int? ttl = null,
+                CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Execute an AQL query, creating a cursor which can be used to page query results.
         /// </summary>
         /// <param name="postCursorBody">Object encapsulating options and parameters of the query.</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<CursorResponse<T>> PostCursorAsync<T>(PostCursorBody postCursorBody);
+        Task<CursorResponse<T>> PostCursorAsync<T>(PostCursorBody postCursorBody, CancellationToken cancellationToken);
 
         /// <summary>
         /// Deletes an existing cursor and frees the resources associated with it.
@@ -45,14 +48,16 @@ namespace ArangoDBNetStandard.CursorApi
         /// </summary>
         /// <param name="cursorId">The id of the cursor to delete.</param>
         /// <returns></returns>
-        Task<DeleteCursorResponse> DeleteCursorAsync(string cursorId);
+        Task<DeleteCursorResponse> DeleteCursorAsync(string cursorId,
+            CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Advances an existing query cursor and gets the next set of results.
         /// </summary>
         /// <typeparam name="T">Result type to deserialize to</typeparam>
         /// <param name="cursorId">ID of the existing query cursor.</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<PutCursorResponse<T>> PutCursorAsync<T>(string cursorId);
+        Task<PutCursorResponse<T>> PutCursorAsync<T>(string cursorId, CancellationToken cancellationToken);
     }
 }

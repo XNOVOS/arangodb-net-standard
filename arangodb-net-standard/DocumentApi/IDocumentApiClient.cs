@@ -1,6 +1,7 @@
 ﻿using ArangoDBNetStandard.DocumentApi.Models;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ArangoDBNetStandard.DocumentApi
@@ -16,12 +17,13 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <typeparam name="T"></typeparam>
         /// <param name="collectionName"></param>
         /// <param name="document"></param>
+        /// <param name="cancellationToken"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        Task<PostDocumentResponse<T>> PostDocumentAsync<T>(
-           string collectionName,
-           T document,
-           PostDocumentsQuery query = null);
+        Task<PostDocumentResponse<T>> PostDocumentAsync<T>(string collectionName,
+            T document,
+            PostDocumentsQuery query = null,
+            CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Post multiple documents in a single request.
@@ -29,12 +31,13 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <typeparam name="T"></typeparam>
         /// <param name="collectionName"></param>
         /// <param name="documents"></param>
+        /// <param name="cancellationToken"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        Task<PostDocumentsResponse<T>> PostDocumentsAsync<T>(
-           string collectionName,
-           IList<T> documents,
-           PostDocumentsQuery query = null);
+        Task<PostDocumentsResponse<T>> PostDocumentsAsync<T>(string collectionName,
+            IEnumerable<T> documents,
+            PostDocumentsQuery query = null,
+            CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Replace multiple documents.
@@ -46,8 +49,9 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <returns></returns>
         Task<PostDocumentsResponse<T>> PutDocumentsAsync<T>(
            string collectionName,
-           IList<T> documents,
-           PutDocumentsQuery query = null);
+           IEnumerable<T> documents,
+           PutDocumentsQuery query = null,
+           CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Replaces the document with handle <document-handle> with the one in
@@ -62,8 +66,9 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <returns></returns>
         Task<PostDocumentResponse<T>> PutDocumentAsync<T>(
             string documentId,
-            T doc,
-            PutDocumentsQuery opts = null);
+            T document,
+            PutDocumentsQuery opts = null,
+            CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Get an existing document.
@@ -72,7 +77,8 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <param name="collectionName"></param>
         /// <param name="documentKey"></param>
         /// <returns></returns>
-        Task<T> GetDocumentAsync<T>(string collectionName, string documentKey);
+        Task<GetDocumentResponse<T>> GetDocumentAsync<T>(string collectionName, string documentKey,
+            CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Get an existing document based on its Document ID.
@@ -80,7 +86,8 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <typeparam name="T"></typeparam>
         /// <param name="documentId"></param>
         /// <returns></returns>
-        Task<T> GetDocumentAsync<T>(string documentId);
+        Task<GetDocumentResponse<T>> GetDocumentAsync<T>(string documentId,
+            CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Delete a document.
@@ -98,7 +105,8 @@ namespace ArangoDBNetStandard.DocumentApi
         Task<DeleteDocumentResponse<object>> DeleteDocumentAsync(
             string collectionName,
             string documentKey,
-            DeleteDocumentsQuery query = null);
+            DeleteDocumentsQuery query = null,
+            CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Delete a document based on its document ID.
@@ -114,7 +122,8 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <returns></returns>
         Task<DeleteDocumentResponse<object>> DeleteDocumentAsync(
             string documentId,
-            DeleteDocumentsQuery query = null);
+            DeleteDocumentsQuery query = null,
+            CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Delete multiple documents based on the passed document selectors.
@@ -132,8 +141,9 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <returns></returns>
         Task<DeleteDocumentsResponse<object>> DeleteDocumentsAsync(
           string collectionName,
-          IList<string> selectors,
-          DeleteDocumentsQuery query = null);
+          IEnumerable<string> selectors,
+          DeleteDocumentsQuery query = null,
+          CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Delete a document.
@@ -146,7 +156,8 @@ namespace ArangoDBNetStandard.DocumentApi
         Task<DeleteDocumentResponse<T>> DeleteDocumentAsync<T>(
           string collectionName,
           string documentKey,
-          DeleteDocumentsQuery query = null);
+          DeleteDocumentsQuery query = null,
+          CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Delete a document based on its document ID.
@@ -156,7 +167,8 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <returns></returns>
         Task<DeleteDocumentResponse<T>> DeleteDocumentAsync<T>(
           string documentId,
-          DeleteDocumentsQuery query = null);
+          DeleteDocumentsQuery query = null,
+          CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Delete multiple documents based on the passed document selectors.
@@ -169,8 +181,9 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <returns></returns>
         Task<DeleteDocumentsResponse<T>> DeleteDocumentsAsync<T>(
           string collectionName,
-          IList<string> selectors,
-          DeleteDocumentsQuery query = null);
+          IEnumerable<string> selectors,
+          DeleteDocumentsQuery query = null,
+          CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Partially updates documents, the documents to update are specified
@@ -194,12 +207,13 @@ namespace ArangoDBNetStandard.DocumentApi
         /// are used.</typeparam>
         /// <param name="collectionName"></param>
         /// <param name="patches"></param>
+        /// <param name="cancellationToken"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        Task<IList<PatchDocumentsResponse<U>>> PatchDocumentsAsync<T, U>(
-          string collectionName,
-          IList<T> patches,
-          PatchDocumentsQuery query = null);
+        Task<PatchDocumentsResponse<TResponse>> PatchDocumentsAsync<TPatch, TResponse>(string collectionName,
+            IEnumerable<TPatch> patches,
+            PatchDocumentsQuery query = null,
+            CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Partially updates the document identified by document-handle.
@@ -223,7 +237,8 @@ namespace ArangoDBNetStandard.DocumentApi
           string collectionName,
           string documentKey,
           T body,
-          PatchDocumentQuery query = null);
+          PatchDocumentQuery query = null,
+          CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Partially updates the document identified by document-handle.
@@ -235,17 +250,19 @@ namespace ArangoDBNetStandard.DocumentApi
         /// PATCH/_api/document/{document-handle}
         /// </summary>
         /// <typeparam name="T">Type of the patch object used to partially update a document.</typeparam>
-        /// <typeparam name="U">Type of the returned document, only applies when
+        /// <typeparam name="TResponse">Type of the returned document, only applies when
         /// <see cref="PatchDocumentQuery.ReturnNew"/> or <see cref="PatchDocumentQuery.ReturnOld"/>
         /// are used.</typeparam>
         /// <param name="documentId"></param>
         /// <param name="body"></param>
         /// <param name="query"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<PatchDocumentResponse<U>> PatchDocumentAsync<T, U>(
+        Task<PatchDocumentResponse<TResponse>> PatchDocumentAsync<TPatch, TResponse>(
           string documentId,
-          T body,
-          PatchDocumentQuery query = null);
+          TPatch body,
+          PatchDocumentQuery query = null,
+          CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Like GET, but only returns the header fields and not the body. You
@@ -266,7 +283,8 @@ namespace ArangoDBNetStandard.DocumentApi
         Task<HeadDocumentResponse> HeadDocumentAsync(
           string collectionName,
           string documentKey,
-          HeadDocumentHeader headers = null);
+          HeadDocumentHeader headers = null,
+          CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Like GET, but only returns the header fields and not the body. You
@@ -284,6 +302,7 @@ namespace ArangoDBNetStandard.DocumentApi
         /// 412: is returned if an “If-Match” header is given and the found document has a different version. The response will also contain the found document’s current revision in the Etag header.
         /// </remarks>
         /// <returns></returns>
-        Task<HeadDocumentResponse> HeadDocumentAsync(string documentId, HeadDocumentHeader headers = null);
+        Task<HeadDocumentResponse> HeadDocumentAsync(string documentId, HeadDocumentHeader headers = null,
+            CancellationToken cancellationToken = default);
     }
 }

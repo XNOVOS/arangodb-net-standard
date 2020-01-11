@@ -3,6 +3,7 @@ using ArangoDBNetStandard.Serialization;
 using ArangoDBNetStandard.Transport;
 using System.Collections.Generic;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ArangoDBNetStandard.CursorApi
@@ -12,18 +13,16 @@ namespace ArangoDBNetStandard.CursorApi
     /// </summary>
     public class CursorApiClient : ApiClientBase, ICursorApiClient
     {
-        private readonly string _cursorApiPath = "_api/cursor";
-        private IApiClientTransport _client;
+        protected override string ApiRootPath => "_api/cursor";
 
         /// <summary>
         /// Creates an instance of <see cref="CursorApiClient"/>
         /// using the provided transport layer and the default JSON serialization.
         /// </summary>
         /// <param name="client"></param>
-        public CursorApiClient(IApiClientTransport client)
-            : base(new JsonNetApiClientSerialization())
+        public CursorApiClient(IApiClientTransport transport)
+            : base(transport, new JsonNetApiClientSerialization())
         {
-            _client = client;
         }
 
         /// <summary>
@@ -32,10 +31,9 @@ namespace ArangoDBNetStandard.CursorApi
         /// </summary>
         /// <param name="client"></param>
         /// <param name="serializer"></param>
-        public CursorApiClient(IApiClientTransport client, IApiClientSerialization serializer)
-            : base(serializer)
+        public CursorApiClient(IApiClientTransport transport, IApiClientSerialization serializer)
+            : base(transport, serializer)
         {
-            _client = client;
         }
 
         /// <summary>
@@ -59,7 +57,8 @@ namespace ArangoDBNetStandard.CursorApi
                 long? batchSize = null,
                 bool? cache = null,
                 long? memoryLimit = null,
-                int? ttl = null)
+                int? ttl = null,
+                CancellationToken cancellationToken = default)
         {
             return await PostCursorAsync<T>(new PostCursorBody
             {
@@ -70,27 +69,21 @@ namespace ArangoDBNetStandard.CursorApi
                 BatchSize = batchSize,
                 Cache = cache,
                 MemoryLimit = memoryLimit,
-                Ttl = ttl
-            });
+                Ttl = ttl,
+            }, cancellationToken);
         }
 
         /// <summary>
         /// Execute an AQL query, creating a cursor which can be used to page query results.
         /// </summary>
         /// <param name="postCursorBody">Object encapsulating options and parameters of the query.</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<CursorResponse<T>> PostCursorAsync<T>(PostCursorBody postCursorBody)
+        public async Task<CursorResponse<T>> PostCursorAsync<T>(PostCursorBody postCursorBody,
+            CancellationToken cancellationToken = default)
         {
-            var content = GetContent(postCursorBody, true, true);
-            using (var response = await _client.PostAsync(_cursorApiPath, content))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    return DeserializeJsonFromStream<CursorResponse<T>>(stream);
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await PostRequestAsync(ApiRootPath, response => new CursorResponse<T>(response), postCursorBody,
+                null, cancellationToken);
         }
 
         /// <summary>
@@ -99,17 +92,10 @@ namespace ArangoDBNetStandard.CursorApi
         /// </summary>
         /// <param name="cursorId">The id of the cursor to delete.</param>
         /// <returns></returns>
-        public async Task<DeleteCursorResponse> DeleteCursorAsync(string cursorId)
+        public async Task<DeleteCursorResponse> DeleteCursorAsync(string cursorId, CancellationToken cancellationToken = default)
         {
-            using (var response = await _client.DeleteAsync(_cursorApiPath + "/" + WebUtility.UrlEncode(cursorId)))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    return DeserializeJsonFromStream<DeleteCursorResponse>(stream);
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await DeleteRequestAsync($"{ApiRootPath}/{WebUtility.UrlEncode(cursorId)}",
+                response => new DeleteCursorResponse(response), null, cancellationToken);
         }
 
         /// <summary>
@@ -117,19 +103,12 @@ namespace ArangoDBNetStandard.CursorApi
         /// </summary>
         /// <typeparam name="T">Result type to deserialize to</typeparam>
         /// <param name="cursorId">ID of the existing query cursor.</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<PutCursorResponse<T>> PutCursorAsync<T>(string cursorId)
+        public async Task<PutCursorResponse<T>> PutCursorAsync<T>(string cursorId, CancellationToken cancellationToken = default)
         {
-            string uri = _cursorApiPath + "/" + WebUtility.UrlEncode(cursorId);
-            using (var response = await _client.PutAsync(uri, new byte[0]))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    return DeserializeJsonFromStream<PutCursorResponse<T>>(stream);
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await PutRequestAsync(ApiRootPath + "/" + WebUtility.UrlEncode(cursorId),
+                response => new PutCursorResponse<T>(response), null, null, cancellationToken);
         }
     }
 }

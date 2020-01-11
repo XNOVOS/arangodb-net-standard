@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace ArangoDBNetStandard.DocumentApi.Models
 {
-    public class PatchDocumentsQuery
+    public class PatchDocumentsQuery : RequestOptionsBase
     {
         public bool? KeepNull { get; set; }
 
@@ -16,34 +17,20 @@ namespace ArangoDBNetStandard.DocumentApi.Models
 
         public bool? ReturnNew { get; set; }
 
-        internal string ToQueryString()
+        protected override void PrepareQueryStringValues(IDictionary<string, string> values)
         {
-            var queryParams = new List<string>();
-            if (KeepNull != null)
-            {
-                queryParams.Add("keepNull=" + KeepNull.ToString().ToLower());
-            }
-            if (MergeObjects != null)
-            {
-                queryParams.Add("mergeObjects=" + MergeObjects.ToString().ToLower());
-            }
-            if (WaitForSync != null)
-            {
-                queryParams.Add("waitForSync=" + WaitForSync.ToString().ToLower());
-            }
-            if (IgnoreRevs != null)
-            {
-                queryParams.Add("ignoreRevs=" + IgnoreRevs.ToString().ToLower());
-            }
-            if (ReturnOld != null)
-            {
-                queryParams.Add("returnOld=" + ReturnOld.ToString().ToLower());
-            }
-            if (ReturnNew != null)
-            {
-                queryParams.Add("returnNew=" + ReturnNew.ToString().ToLower());
-            }
-            return string.Join("&", queryParams);
+            if (WaitForSync.HasValue)
+                values.Add(nameof(WaitForSync).ToCamelCase(), WaitForSync.ToString().ToLowerInvariant());
+            if (ReturnOld.HasValue)
+                values.Add(nameof(ReturnOld).ToCamelCase(), ReturnOld.ToString().ToLowerInvariant());
+            if (KeepNull.HasValue)
+                values.Add(nameof(KeepNull).ToCamelCase(), KeepNull.ToString().ToLowerInvariant());
+            if (MergeObjects.HasValue)
+                values.Add(nameof(MergeObjects).ToCamelCase(), MergeObjects.ToString().ToLowerInvariant());
+            if (ReturnNew.HasValue)
+                values.Add(nameof(ReturnNew).ToCamelCase(), ReturnNew.ToString().ToLowerInvariant());
+            if (IgnoreRevs.HasValue)
+                values.Add(nameof(IgnoreRevs).ToCamelCase(), IgnoreRevs.ToString().ToLowerInvariant());
         }
     }
 }

@@ -1,13 +1,33 @@
-﻿namespace ArangoDBNetStandard.DocumentApi.Models
+﻿using System.Collections;
+using System.Collections.Generic;
+
+namespace ArangoDBNetStandard.DocumentApi.Models
 {
-    public class PatchDocumentsResponse<U> : DocumentBase
+    public class PatchDocumentsResponse<T> : ResponseBase, IReadOnlyList<PatchDocumentResponse<T>>
     {
-        public U New { get; set; }
+        private readonly IList<PatchDocumentResponse<T>> _responses;
 
-        public U Old { get; set; }
+        public PatchDocumentsResponse(IEnumerable<PatchDocumentResponse<T>> responses) : base(null)
+        {
+            _responses = new List<PatchDocumentResponse<T>>(responses);
+        }
 
-        public bool Error { get; set; }
+        public PatchDocumentsResponse(ApiResponse errorDetails) : base(errorDetails)
+        {
+        }
 
-        public int ErrorNum { get; set; }
+        public IEnumerator<PatchDocumentResponse<T>> GetEnumerator()
+        {
+            return _responses.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        public int Count => _responses.Count;
+
+        public PatchDocumentResponse<T> this[int index] => _responses[index];
     }
 }

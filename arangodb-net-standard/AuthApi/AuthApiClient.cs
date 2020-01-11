@@ -10,18 +10,16 @@ namespace ArangoDBNetStandard.AuthApi
     /// </summary>
     public class AuthApiClient : ApiClientBase, IAuthApiClient
     {
-        private IApiClientTransport _client;
+        protected override string ApiRootPath => "/_open/auth";
 
-        public AuthApiClient(IApiClientTransport client)
-            : base(new JsonNetApiClientSerialization())
+        public AuthApiClient(IApiClientTransport transport)
+            : base(transport, new JsonNetApiClientSerialization())
         {
-            _client = client;
         }
 
-        public AuthApiClient(IApiClientTransport client, IApiClientSerialization serializer)
-            : base(serializer)
+        public AuthApiClient(IApiClientTransport transport, IApiClientSerialization serializer)
+            : base(transport, serializer)
         {
-            _client = client;
         }
 
         /// <summary>
@@ -47,14 +45,14 @@ namespace ArangoDBNetStandard.AuthApi
         public async Task<JwtTokenResponse> GetJwtTokenAsync(JwtTokenRequestBody body)
         {
             byte[] content = GetContent(body, true, false);
-            using (var response = await _client.PostAsync("/_open/auth", content))
+            using (var response = await Transport.PostAsync(ApiRootPath, content))
             {
                 if (response.IsSuccessStatusCode)
                 {
                     var stream = await response.Content.ReadAsStreamAsync();
                     return DeserializeJsonFromStream<JwtTokenResponse>(stream);
                 }
-                throw await GetApiErrorException(response);
+                return new JwtTokenResponse(await GetApiErrorResponse(response));
             }
         }
     }

@@ -1,21 +1,33 @@
 ﻿using System.Net;
+using ArangoDBNetStandard.DocumentApi.Models;
+using Newtonsoft.Json;
 
 namespace ArangoDBNetStandard.CollectionApi.Models
 {
-    public class RenameCollectionResponse
+    public class RenameCollectionResponse : ResponseBase
     {
-        public string Id { get; set; }
+        [JsonConstructor]
+        public RenameCollectionResponse(string id, string name, int status, int type, bool isSystem, HttpStatusCode code, bool error) : base(new ApiResponse(error, code, null, null))
+        {
+            Id = id;
+            Name = name;
+            Status = status;
+            Type = type;
+            IsSystem = isSystem;
+        }
 
-        public string Name { get; set; }
+        public string Id { get; }
 
-        public int Status { get; set; }
+        public string Name { get; }
 
-        public int Type { get; set; }
+        public int Status { get; }
 
-        public bool IsSystem { get; set; }
+        public int Type { get; }
 
-        public HttpStatusCode Code { get; set; }
+        public bool IsSystem { get; }
 
-        public bool Error { get; set; }
+        public RenameCollectionResponse(ApiResponse errorDetails) : base(errorDetails)
+        {
+        }
     }
 }

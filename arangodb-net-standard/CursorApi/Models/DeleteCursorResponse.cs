@@ -1,25 +1,27 @@
 ﻿using System.Net;
+using ArangoDBNetStandard.DocumentApi.Models;
+using Newtonsoft.Json;
 
 namespace ArangoDBNetStandard.CursorApi.Models
 {
     /// <summary>
     /// Represents a response returned after deleting a cursor.
     /// </summary>
-    public class DeleteCursorResponse
+    public class DeleteCursorResponse : ResponseBase
     {
-        /// <summary>
-        /// Indicates whether an error occurred (false in this case).
-        /// </summary>
-        public bool Error { get; set; }
+        [JsonConstructor]
+        public DeleteCursorResponse(bool error, HttpStatusCode code, string id) : base(new ApiResponse(error, code, null, null))
+        {
+            Id = id;
+        }
 
-        /// <summary>
-        /// The HTTP status code.
-        /// </summary>
-        public HttpStatusCode Code { get; set; }
+        public DeleteCursorResponse(ApiResponse errorDetails) : base(errorDetails)
+        {
+        }
 
         /// <summary>
         /// The id of the cursor.
         /// </summary>
-        public string Id { get; set; }
+        public string Id { get; }
     }
 }

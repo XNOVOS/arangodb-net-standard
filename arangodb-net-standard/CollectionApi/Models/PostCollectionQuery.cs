@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Runtime.CompilerServices;
 
 namespace ArangoDBNetStandard.CollectionApi.Models
 {
-    public class PostCollectionQuery
+    public class PostCollectionQuery : RequestOptionsBase
     {
         /// <summary>
         /// Default is true which means the server will only report success back to the
@@ -18,22 +20,12 @@ namespace ArangoDBNetStandard.CollectionApi.Models
         /// </summary>
         public bool? EnforceReplicationFactor { get; set; }
 
-        /// <summary>
-        /// Get the set of options in a format suited to a URL query string.
-        /// </summary>
-        /// <returns></returns>
-        internal string ToQueryString()
+        protected override void PrepareQueryStringValues(IDictionary<string, string> values)
         {
-            List<string> query = new List<string>();
-            if (WaitForSyncReplication != null)
-            {
-                query.Add("waitForSyncReplication=" + (WaitForSyncReplication.Value ? 1 : 0));
-            }
-            if (EnforceReplicationFactor != null)
-            {
-                query.Add("enforceReplicationFactor=" + (EnforceReplicationFactor.Value ? 1 : 0));
-            }
-            return string.Join("&", query);
+            if (WaitForSyncReplication.HasValue)
+                values.Add(nameof(WaitForSyncReplication).ToCamelCase(), (WaitForSyncReplication.Value ? 1 : 0).ToString());
+            if (EnforceReplicationFactor.HasValue)
+                values.Add(nameof(EnforceReplicationFactor).ToCamelCase(), (EnforceReplicationFactor.Value ? 1 : 0).ToString());
         }
     }
 }

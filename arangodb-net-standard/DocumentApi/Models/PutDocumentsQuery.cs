@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace ArangoDBNetStandard.DocumentApi.Models
 {
     /// <summary>
     /// Options used when calling ArangoDB PUT document endpoint.
     /// </summary>
-    public class PutDocumentsQuery
+    public class PutDocumentsQuery : RequestOptionsBase
     {
         /// <summary>
         /// Whether to wait until the new documents have been synced to disk.
@@ -35,30 +34,16 @@ namespace ArangoDBNetStandard.DocumentApi.Models
         /// </summary>
         public bool? ReturnNew { get; set; }
 
-        /// <summary>
-        /// Get the set of options in a format suited to a URL query string.
-        /// </summary>
-        /// <returns></returns>
-        internal string ToQueryString()
+        protected override void PrepareQueryStringValues(IDictionary<string, string> values)
         {
-            List<string> query = new List<string>();
-            if (WaitForSync != null)
-            {
-                query.Add("waitForSync=" + WaitForSync.ToString().ToLower());
-            }
-            if (ReturnNew != null)
-            {
-                query.Add("returnNew=" + ReturnNew.ToString().ToLower());
-            }
-            if (ReturnOld != null)
-            {
-                query.Add("returnOld=" + ReturnOld.ToString().ToLower());
-            }
-            if (IgnoreRevs != null)
-            {
-                query.Add("ignoreRevs=" + IgnoreRevs.ToString().ToLower());
-            }
-            return string.Join("&", query);
+            if (WaitForSync.HasValue)
+                values.Add(nameof(WaitForSync).ToCamelCase(), WaitForSync.ToString().ToLowerInvariant());
+            if (ReturnNew.HasValue)
+                values.Add(nameof(ReturnNew).ToCamelCase(), ReturnNew.ToString().ToLowerInvariant());
+            if (ReturnOld.HasValue)
+                values.Add(nameof(ReturnOld).ToCamelCase(), ReturnOld.ToString().ToLowerInvariant());
+            if (IgnoreRevs.HasValue)
+                values.Add(nameof(IgnoreRevs).ToCamelCase(), IgnoreRevs.ToString().ToLowerInvariant());
         }
     }
 }

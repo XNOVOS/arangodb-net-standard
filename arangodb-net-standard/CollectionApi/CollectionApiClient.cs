@@ -2,6 +2,7 @@
 using ArangoDBNetStandard.Serialization;
 using ArangoDBNetStandard.Transport;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ArangoDBNetStandard.CollectionApi
@@ -12,8 +13,7 @@ namespace ArangoDBNetStandard.CollectionApi
     /// </summary>
     public class CollectionApiClient : ApiClientBase, ICollectionApiClient
     {
-        private IApiClientTransport _transport;
-        private string _collectionApiPath = "_api/collection";
+        protected override string ApiRootPath => "_api/collection";
 
         /// <summary>
         /// Creates an instance of <see cref="CollectionApiClient"/>
@@ -21,9 +21,8 @@ namespace ArangoDBNetStandard.CollectionApi
         /// </summary>
         /// <param name="client"></param>
         public CollectionApiClient(IApiClientTransport transport)
-            : base(new JsonNetApiClientSerialization())
+            : base(transport, new JsonNetApiClientSerialization())
         {
-            _transport = transport;
         }
 
         /// <summary>
@@ -33,41 +32,24 @@ namespace ArangoDBNetStandard.CollectionApi
         /// <param name="transport"></param>
         /// <param name="serializer"></param>
         public CollectionApiClient(IApiClientTransport transport, IApiClientSerialization serializer)
-            : base(serializer)
+            : base(transport, serializer)
         {
-            _transport = transport;
         }
 
-        public async Task<PostCollectionResponse> PostCollectionAsync(PostCollectionBody body, PostCollectionQuery options = null)
+        public async Task<PostCollectionResponse> PostCollectionAsync(PostCollectionBody body,
+            PostCollectionQuery options = null, CancellationToken cancellationToken = default)
         {
-            string uriString = _collectionApiPath;
-            if (options != null)
-            {
-                uriString += "?" + options.ToQueryString();
-            }
-            var content = GetContent(body, true, true);
-            using (var response = await _transport.PostAsync(_collectionApiPath, content))
-            {
-                var stream = await response.Content.ReadAsStreamAsync();
-                if (response.IsSuccessStatusCode)
-                {
-                    return DeserializeJsonFromStream<PostCollectionResponse>(stream);
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await PostRequestAsync(
+                ApiRootPath,
+                errorResponse => new PostCollectionResponse(errorResponse),
+                body, options, cancellationToken);
         }
 
-        public async Task<DeleteCollectionResponse> DeleteCollectionAsync(string collectionName)
+        public async Task<DeleteCollectionResponse> DeleteCollectionAsync(string collectionName,
+            CancellationToken cancellationToken = default)
         {
-            using (var response = await _transport.DeleteAsync(_collectionApiPath + "/" + WebUtility.UrlEncode(collectionName)))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    return DeserializeJsonFromStream<DeleteCollectionResponse>(stream);
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await DeleteRequestAsync(ApiRootPath + "/" + WebUtility.UrlEncode(collectionName),
+                errorResponse => new DeleteCollectionResponse(errorResponse), null, cancellationToken);
         }
 
         /// <summary>
@@ -76,19 +58,11 @@ namespace ArangoDBNetStandard.CollectionApi
         /// </summary>
         /// <param name="collectionName"></param>
         /// <returns></returns>
-        public async Task<TruncateCollectionResponse> TruncateCollectionAsync(string collectionName)
+        public async Task<TruncateCollectionResponse> TruncateCollectionAsync(string collectionName,
+            CancellationToken cancellationToken = default)
         {
-            using (var response = await _transport.PutAsync(
-                _collectionApiPath + "/" + WebUtility.UrlEncode(collectionName) + "/truncate",
-                new byte[0]))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    return DeserializeJsonFromStream<TruncateCollectionResponse>(stream);
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await PutRequestAsync(ApiRootPath + "/" + WebUtility.UrlEncode(collectionName) + "/truncate",
+                errorResponse => new TruncateCollectionResponse(errorResponse), null, null, cancellationToken);
         }
 
         /// <summary>
@@ -97,17 +71,11 @@ namespace ArangoDBNetStandard.CollectionApi
         /// </summary>
         /// <param name="collectionName"></param>
         /// <returns></returns>
-        public async Task<GetCollectionCountResponse> GetCollectionCountAsync(string collectionName)
+        public async Task<GetCollectionCountResponse> GetCollectionCountAsync(string collectionName,
+            CancellationToken cancellationToken = default)
         {
-            using (var response = await _transport.GetAsync(_collectionApiPath + "/" + WebUtility.UrlEncode(collectionName) + "/count"))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    return DeserializeJsonFromStream<GetCollectionCountResponse>(stream);
-                }
-                throw await GetApiErrorException(response);
-            };
+            return await GetRequestAsync($"{ApiRootPath}/{WebUtility.UrlEncode(collectionName)}/count",
+                response => new GetCollectionCountResponse(response), null, cancellationToken);
         }
 
         /// <summary>
@@ -116,22 +84,11 @@ namespace ArangoDBNetStandard.CollectionApi
         /// </summary>
         /// <param name="options"></param>
         /// <returns></returns>
-        public async Task<GetCollectionsResponse> GetCollectionsAsync(GetCollectionsQuery query = null)
+        public async Task<GetCollectionsResponse> GetCollectionsAsync(GetCollectionsQuery query = null,
+            CancellationToken cancellationToken = default)
         {
-            string uriString = _collectionApiPath;
-            if (query != null)
-            {
-                uriString += "?" + query.ToQueryString();
-            }
-            using (var response = await _transport.GetAsync(uriString))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    return DeserializeJsonFromStream<GetCollectionsResponse>(stream);
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await GetRequestAsync(ApiRootPath, response => new GetCollectionsResponse(response), query,
+                cancellationToken);
         }
 
         /// <summary>
@@ -140,18 +97,11 @@ namespace ArangoDBNetStandard.CollectionApi
         /// </summary>
         /// <param name="collectionName"></param>
         /// <returns></returns>
-        public async Task<GetCollectionResponse> GetCollectionAsync(string collectionName)
+        public async Task<GetCollectionResponse> GetCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
         {
-            using (var response = await _transport.GetAsync(_collectionApiPath + "/" + WebUtility.UrlEncode(collectionName)))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    var collection = DeserializeJsonFromStream<GetCollectionResponse>(stream);
-                    return collection;
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await GetRequestAsync(
+                ApiRootPath + "/" + WebUtility.UrlEncode(collectionName),
+                errorResponse => new GetCollectionResponse(errorResponse), cancellationToken: cancellationToken);
         }
 
         /// Read properties of a collection.
@@ -159,17 +109,11 @@ namespace ArangoDBNetStandard.CollectionApi
         /// </summary>
         /// <param name="options"></param>
         /// <returns></returns>
-        public async Task<GetCollectionPropertiesResponse> GetCollectionPropertiesAsync(string collectionName)
+        public async Task<GetCollectionPropertiesResponse> GetCollectionPropertiesAsync(string collectionName,
+            CancellationToken cancellationToken = default)
         {
-            using (var response = await _transport.GetAsync(_collectionApiPath + "/" + WebUtility.UrlEncode(collectionName) + "/properties"))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    return DeserializeJsonFromStream<GetCollectionPropertiesResponse>(stream);
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await GetRequestAsync($"{ApiRootPath}/{WebUtility.UrlEncode(collectionName)}/properties",
+                response => new GetCollectionPropertiesResponse(response), null, cancellationToken);
         }
 
         /// <summary>
@@ -177,21 +121,15 @@ namespace ArangoDBNetStandard.CollectionApi
         /// PUT /_api/collection/{collection-name}/rename
         /// </summary>
         /// <param name="collectionName"></param>
+        /// <param name="body"></param>
+        /// <param name="cancellationToken"></param>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<RenameCollectionResponse> RenameCollectionAsync(string collectionName, RenameCollectionBody body)
+        public async Task<RenameCollectionResponse> RenameCollectionAsync(string collectionName,
+            RenameCollectionBody body, CancellationToken cancellationToken = default)
         {
-            var content = GetContent(body, true, false);
-            using (var response = await _transport.PutAsync(_collectionApiPath + "/" + WebUtility.UrlEncode(collectionName) + "/rename", content))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    var collection = DeserializeJsonFromStream<RenameCollectionResponse>(stream);
-                    return collection;
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await PutRequestAsync($"{ApiRootPath}/{WebUtility.UrlEncode(collectionName)}/rename",
+                response => new RenameCollectionResponse(response), body, null, cancellationToken);
         }
 
         /// <summary>
@@ -199,18 +137,13 @@ namespace ArangoDBNetStandard.CollectionApi
         /// GET /_api/collection/{collection-name}/revision
         /// </summary>
         /// <param name="collectionName">Name of the collection</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<GetCollectionRevisionResponse> GetCollectionRevisionAsync(string collectionName)
+        public async Task<GetCollectionRevisionResponse> GetCollectionRevisionAsync(string collectionName,
+            CancellationToken cancellationToken = default)
         {
-            using (var response = await _transport.GetAsync(_collectionApiPath + "/" + WebUtility.UrlEncode(collectionName) + "/revision"))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    return DeserializeJsonFromStream<GetCollectionRevisionResponse>(stream);
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await GetRequestAsync($"{ApiRootPath}/{WebUtility.UrlEncode(collectionName)}/revision",
+                response => new GetCollectionRevisionResponse(response), null, cancellationToken);
         }
 
         /// <summary>
@@ -219,39 +152,28 @@ namespace ArangoDBNetStandard.CollectionApi
         /// </summary>
         /// <param name="collectionName"></param>
         /// <param name="body"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<PutCollectionPropertyResponse> PutCollectionPropertyAsync(string collectionName, PutCollectionPropertyBody body)
+        public async Task<PutCollectionPropertyResponse> PutCollectionPropertyAsync(string collectionName,
+            PutCollectionPropertyBody body, CancellationToken cancellationToken = default)
         {
-            var content = GetContent(body, true, true);
-            using (var response = await _transport.PutAsync(_collectionApiPath + "/" + collectionName + "/properties", content))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    return DeserializeJsonFromStream<PutCollectionPropertyResponse>(stream);
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await PutRequestAsync($"{ApiRootPath}/{collectionName}/properties",
+                response => new PutCollectionPropertyResponse(response), body, null, cancellationToken);
         }
 
         /// <summary>
         /// Contains the number of documents and additional statistical information about the collection.
         /// GET/_api/collection/{collection-name}/figures
         /// </summary>
+        /// <param name="collectionName"></param>
+        /// <param name="cancellationToken"></param>
         /// <param name="options"></param>
         /// <returns></returns>
-        public async Task<GetCollectionFiguresResponse> GetCollectionFiguresAsync(string collectionName)
+        public async Task<GetCollectionFiguresResponse> GetCollectionFiguresAsync(string collectionName,
+            CancellationToken cancellationToken = default)
         {
-            using (var response = await _transport.GetAsync(_collectionApiPath + "/" + WebUtility.UrlEncode(collectionName) + "/figures"))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    return DeserializeJsonFromStream<GetCollectionFiguresResponse>(stream);
-                }
-
-                throw await GetApiErrorException(response);
-            };
+            return await GetRequestAsync($"{ApiRootPath}/{WebUtility.UrlEncode(collectionName)}/figures",
+                response => new GetCollectionFiguresResponse(response), null, cancellationToken);
         }
     }
 }

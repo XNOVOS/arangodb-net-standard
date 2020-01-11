@@ -1,13 +1,24 @@
-﻿namespace ArangoDBNetStandard.CollectionApi.Models
+﻿using Newtonsoft.Json;
+
+namespace ArangoDBNetStandard.CollectionApi.Models
 {
     public class CollectionKeyOptions
     {
-        public bool AllowUserKeys { get; set; }
+        [JsonConstructor]
+        public CollectionKeyOptions(bool allowUserKeys, long increment, long offset, string type)
+        {
+            AllowUserKeys = allowUserKeys;
+            Increment = increment;
+            Offset = offset;
+            Type = type;
+        }
 
-        public long Increment { get; set; }
+        public bool AllowUserKeys { get; }
 
-        public long Offset { get; set; }
+        public long Increment { get; }
 
-        public string Type { get; set; }
+        public long Offset { get; }
+
+        public string Type { get; }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Net.Http.Headers;
 
 namespace ArangoDBNetStandard.Transport
@@ -9,7 +10,7 @@ namespace ArangoDBNetStandard.Transport
 
         bool IsSuccessStatusCode { get; }
 
-        int StatusCode { get; }
+        HttpStatusCode StatusCode { get; }
 
         HttpResponseHeaders Headers { get; }
     }

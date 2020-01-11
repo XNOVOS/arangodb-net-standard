@@ -7,26 +7,40 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ArangoDBNetStandard.Serialization;
+using ArangoDBNetStandardTest.AuthApi;
 using Xunit;
 
 namespace ArangoDBNetStandardTest
 {
     public abstract class ApiClientTestFixtureBase : IDisposable, IAsyncLifetime
     {
-        private List<string> _databases = new List<string>();
-        private List<string> _users = new List<string>();
+        private readonly List<string> _databases = new List<string>();
+        private readonly List<string> _users = new List<string>();
 
         private readonly List<HttpApiTransport> _transports = new List<HttpApiTransport>();
 
-        public string ArangoDbHost => Environment.GetEnvironmentVariable("ARANGO_HOST") ?? "localhost";
+        public string ArangoDbHost => Environment.GetEnvironmentVariable("ARANGO_HOST") ?? ArangoDBTestSettings.ArangoHost;
+
+        protected ApiClientTestFixtureBase()
+        {
+            //int listenersCount = System.Diagnostics.Trace.Listeners.Count;
+        }
+
+        private IApiClientSerialization GetApiClientSerialization()
+        {
+            return ArangoDBTestSettings.EnableJsonSerializationTracing
+                ? new JsonNetApiClientSerializationWithTracing()
+                : new JsonNetApiClientSerialization();
+        }
 
         protected HttpApiTransport GetHttpTransport(string dbName)
         {
             var transport = HttpApiTransport.UsingBasicAuth(
                 new Uri($"http://{ArangoDbHost}:8529/"),
                 dbName,
-                "root",
-                "root");
+                ArangoDBTestSettings.RootUsername,
+                ArangoDBTestSettings.RootPassword);
             _transports.Add(transport);
             return transport;
         }
@@ -34,7 +48,7 @@ namespace ArangoDBNetStandardTest
         protected ArangoDBClient GetArangoDBClient(string dbName)
         {
             var httpTransport = GetHttpTransport(dbName);
-            return new ArangoDBClient(httpTransport);
+            return new ArangoDBClient(httpTransport, GetApiClientSerialization());
         }
 
         /// <summary>
@@ -50,7 +64,7 @@ namespace ArangoDBNetStandardTest
             // Create the test database
             using (var systemDbClient = GetHttpTransport("_system"))
             {
-                var dbApiClient = new DatabaseApiClient(systemDbClient);
+                var dbApiClient = new DatabaseApiClient(systemDbClient, GetApiClientSerialization());
                 try
                 {
                     var postDatabaseResponse = await dbApiClient.PostDatabaseAsync(new PostDatabaseBody
@@ -99,7 +113,7 @@ namespace ArangoDBNetStandardTest
         {
             using (var systemDbClient = GetHttpTransport("_system"))
             {
-                var userApiClient = new UserApiClient(systemDbClient);
+                var userApiClient = new UserApiClient(systemDbClient, GetApiClientSerialization());
                 await userApiClient.DeleteUserAsync(user);
             }
         }
@@ -108,7 +122,7 @@ namespace ArangoDBNetStandardTest
         {
             using (var systemDbClient = GetHttpTransport("_system"))
             {
-                var dbApiClient = new DatabaseApiClient(systemDbClient);
+                var dbApiClient = new DatabaseApiClient(systemDbClient, GetApiClientSerialization());
                 var response = await dbApiClient.DeleteDatabaseAsync(dbName);
             }
         }

@@ -1,41 +1,63 @@
 ﻿using System.Net;
+using ArangoDBNetStandard.DocumentApi.Models;
+using Newtonsoft.Json;
 
 namespace ArangoDBNetStandard.CollectionApi.Models
 {
-    public class GetCollectionFiguresResponse
+    public class GetCollectionFiguresResponse : ResponseBase
     {
-        public FiguresResult Figures { get; set; }
+        [JsonConstructor]
+        public GetCollectionFiguresResponse(FiguresResult figures, CollectionKeyOptions keyOptions, string globallyUniqueId, string statusString, string id, int indexBuckets, bool error, HttpStatusCode code, int type, int status, int journalSize, bool isVolatile, string name, bool doCompact, bool isSystem, int count, bool waitForSync) : base(new ApiResponse(error, code, null, null))
+        {
+            Figures = figures;
+            KeyOptions = keyOptions;
+            GloballyUniqueId = globallyUniqueId;
+            StatusString = statusString;
+            Id = id;
+            IndexBuckets = indexBuckets;
+            Type = type;
+            Status = status;
+            JournalSize = journalSize;
+            IsVolatile = isVolatile;
+            Name = name;
+            DoCompact = doCompact;
+            IsSystem = isSystem;
+            Count = count;
+            WaitForSync = waitForSync;
+        }
 
-        public CollectionKeyOptions KeyOptions { get; set; }
+        public FiguresResult Figures { get; }
 
-        public string GloballyUniqueId { get; set; }
+        public CollectionKeyOptions KeyOptions { get; }
 
-        public string StatusString { get; set; }
+        public string GloballyUniqueId { get; }
 
-        public string Id { get; set; }
+        public string StatusString { get; }
 
-        public int IndexBuckets { get; set; }
+        public string Id { get; }
 
-        public string Error { get; set; }
+        public int IndexBuckets { get; }
 
-        public HttpStatusCode Code { get; set; }
+        public int Type { get; }
 
-        public int Type { get; set; }
+        public int Status { get; }
 
-        public int Status { get; set; }
+        public int JournalSize { get; }
 
-        public int JournalSize { get; set; }
+        public bool IsVolatile { get; }
 
-        public bool IsVolatile { get; set; }
+        public string Name { get; }
 
-        public string Name { get; set; }
+        public bool DoCompact { get; }
 
-        public bool DoCompact { get; set; }
+        public bool IsSystem { get; }
 
-        public bool IsSystem { get; set; }
+        public int Count { get; }
 
-        public int Count { get; set; }
+        public bool WaitForSync { get; }
 
-        public bool WaitForSync { get; set; }
+        public GetCollectionFiguresResponse(ApiResponse errorDetails) : base(errorDetails)
+        {
+        }
     }
 }

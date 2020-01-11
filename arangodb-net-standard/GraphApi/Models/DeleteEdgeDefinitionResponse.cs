@@ -1,13 +1,17 @@
 ﻿using System.Net;
+using Newtonsoft.Json;
 
 namespace ArangoDBNetStandard.GraphApi.Models
 {
-    public class DeleteEdgeDefinitionResponse
+    public class DeleteEdgeDefinitionResponse : GraphResponse
     {
-        public HttpStatusCode Code { get; set; }
+        [JsonConstructor]
+        public DeleteEdgeDefinitionResponse(HttpStatusCode code, GraphResult graph) : base(code, graph)
+        {
+        }
 
-        public bool Error { get; set; }
-
-        public GraphResult Graph { get; set; }
+        public DeleteEdgeDefinitionResponse(ApiResponse errorDetails) : base(errorDetails)
+        {
+        }
     }
 }

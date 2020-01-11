@@ -10,18 +10,16 @@ namespace ArangoDBNetStandard.TransactionApi
     /// </summary>
     public class TransactionApiClient: ApiClientBase
     {
-        private IApiClientTransport _client;
-        private readonly string _transactionApiPath = "_api/transaction";
+        protected override string ApiRootPath => "_api/transaction";
 
         /// <summary>
         /// Create an instance of <see cref="TransactionApiClient"/>
         /// using the provided transport layer and the default JSON serialization.
         /// </summary>
         /// <param name="client"></param>
-        public TransactionApiClient(IApiClientTransport client)
-            : base(new JsonNetApiClientSerialization())
+        public TransactionApiClient(IApiClientTransport transport)
+            : base(transport, new JsonNetApiClientSerialization())
         {
-            _client = client;
         }
 
         /// <summary>
@@ -30,10 +28,9 @@ namespace ArangoDBNetStandard.TransactionApi
         /// </summary>
         /// <param name="client"></param>
         /// <param name="serializer"></param>
-        public TransactionApiClient(IApiClientTransport client, IApiClientSerialization serializer)
-            : base(serializer)
+        public TransactionApiClient(IApiClientTransport transport, IApiClientSerialization serializer)
+            : base(transport, serializer)
         {
-            _client = client;
         }
 
         /// <summary>
@@ -45,14 +42,14 @@ namespace ArangoDBNetStandard.TransactionApi
         public async Task<PostTransactionResponse<T>> PostTransactionAsync<T>(PostTransactionBody body)
         {
             var content = GetContent(body, true, true);
-            using (var response = await _client.PostAsync(_transactionApiPath, content))
+            using (var response = await Transport.PostAsync(ApiRootPath, content))
             {
                 var stream = await response.Content.ReadAsStreamAsync();
                 if (response.IsSuccessStatusCode)
                 {
                     return DeserializeJsonFromStream<PostTransactionResponse<T>>(stream);
                 }
-                var error = DeserializeJsonFromStream<ApiErrorResponse>(stream);
+                var error = DeserializeJsonFromStream<ApiResponse>(stream);
                 throw new ApiErrorException(error);
             }
         }

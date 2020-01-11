@@ -1,23 +1,36 @@
 ﻿using System.Net;
+using ArangoDBNetStandard.DocumentApi.Models;
+using Newtonsoft.Json;
 
 namespace ArangoDBNetStandard.CollectionApi.Models
 {
-    public class TruncateCollectionResponse
+    public class TruncateCollectionResponse : ResponseBase
     {
-        public bool Error { get; set; }
+        public TruncateCollectionResponse(ApiResponse errorDetails) : base(errorDetails)
+        {
+        }
 
-        public HttpStatusCode Code { get; set; }
+        [JsonConstructor]
+        public TruncateCollectionResponse(bool error, HttpStatusCode code, int status, string name, int type, bool isSystem, string globallyUniqueId, string id) : base(new ApiResponse(error, code, null, null))
+        {
+            Status = status;
+            Name = name;
+            Type = type;
+            IsSystem = isSystem;
+            GloballyUniqueId = globallyUniqueId;
+            Id = id;
+        }
 
-        public int Status { get; set; }
+        public int Status { get; }
 
-        public string Name { get; set; }
+        public string Name { get; }
 
-        public int Type { get; set; }
+        public int Type { get; }
 
-        public bool IsSystem { get; set; }
+        public bool IsSystem { get; }
 
-        public string GloballyUniqueId { get; set; }
+        public string GloballyUniqueId { get; }
 
-        public string Id { get; set; }
+        public string Id { get; }
     }
 }

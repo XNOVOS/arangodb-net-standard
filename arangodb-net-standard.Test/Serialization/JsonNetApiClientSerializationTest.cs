@@ -11,7 +11,7 @@ namespace ArangoDBNetStandardTest.Serialization
         [Fact]
         public void Serialize_ShouldSucceed()
         {
-            var model = new TestModel()
+            var model = new TestModel
             {
                 NullPropertyToIgnore = null,
                 PropertyToCamelCase = "myvalue"

@@ -1,38 +1,58 @@
 ﻿using System.Net;
+using ArangoDBNetStandard.DocumentApi.Models;
+using Newtonsoft.Json;
 
 namespace ArangoDBNetStandard.CollectionApi.Models
 {
-    public class PostCollectionResponse
+    public class PostCollectionResponse : ResponseBase
     {
-        public bool Error { get; set; }
+        public PostCollectionResponse(ApiResponse errorDetails) : base(errorDetails)
+        {
+        }
 
-        public HttpStatusCode Code { get; set; }
+        [JsonConstructor]
+        public PostCollectionResponse(bool error, HttpStatusCode code, bool doCompact, string globallyUniqueId, string id, int indexBuckets, bool isSystem, bool isVolatile, long journalSize, PostCollectionResponseCollectionKeyOptions keyOptions, string name, int status, string statusString, int type, bool waitForSync) : base(new ApiResponse(error, code, null, null))
+        {
+            DoCompact = doCompact;
+            GloballyUniqueId = globallyUniqueId;
+            Id = id;
+            IndexBuckets = indexBuckets;
+            IsSystem = isSystem;
+            IsVolatile = isVolatile;
+            JournalSize = journalSize;
+            KeyOptions = keyOptions;
+            Name = name;
+            Status = status;
+            StatusString = statusString;
+            Type = type;
+            WaitForSync = waitForSync;
+        }
 
-        public bool WaitForSync { get; set; }
+        public bool DoCompact { get; }
 
-        public int Type { get; set; }
+        public string GloballyUniqueId { get; }
 
-        public int Status { get; set; }
+        public string Id { get; }
 
-        public long JournalSize { get; set; }
+        public int IndexBuckets { get; }
 
-        public PostCollectionResponseCollectionKeyOptions KeyOptions { get; set; }
+        public bool IsSystem { get; }
 
-        public string GloballyUniqueId { get; set; }
+        public bool IsVolatile { get; }
 
-        public string StatusString { get; set; }
+        public long JournalSize { get; }
 
-        public string Id { get; set; }
+        public PostCollectionResponseCollectionKeyOptions KeyOptions { get; }
 
-        public string Name { get; set; }
+        public string Name { get; }
 
-        public bool DoCompact { get; set; }
+        public int Status { get; }
 
-        public bool IsSystem { get; set; }
+        public string StatusString { get; }
 
-        public int IndexBuckets { get; set; }
+        public int Type { get; }
 
-        public bool IsVolatile { get; set; }
 
+        public bool WaitForSync { get; }
     }
 }

@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace ArangoDBNetStandard.DocumentApi.Models
 {
     /// <summary>
     /// Options used when calling ArangoDB POST document endpoint.
     /// </summary>
-    public class PostDocumentsQuery
+    public class PostDocumentsQuery : RequestOptionsBase
     {
         public bool? WaitForSync { get; set; }
 
@@ -29,34 +30,18 @@ namespace ArangoDBNetStandard.DocumentApi.Models
         /// </summary>
         public bool? Overwrite { get; set; }
 
-        /// <summary>
-        /// Get the set of options in a format suited to a URL query string.
-        /// </summary>
-        /// <returns></returns>
-        internal string ToQueryString()
+        protected override void PrepareQueryStringValues(IDictionary<string, string> values)
         {
-            List<string> query = new List<string>();
-            if (WaitForSync != null)
-            {
-                query.Add("waitForSync=" + WaitForSync.ToString().ToLower());
-            }
-            if (ReturnNew != null)
-            {
-                query.Add("returnNew=" + ReturnNew.ToString().ToLower());
-            }
-            if (ReturnOld != null)
-            {
-                query.Add("returnOld=" + ReturnOld.ToString().ToLower());
-            }
-            if (Silent != null)
-            {
-                query.Add("silent=" + Silent.ToString().ToLower());
-            }
-            if (Overwrite != null)
-            {
-                query.Add("overwrite=" + Overwrite.ToString().ToLower());
-            }
-            return string.Join("&", query);
+            if (WaitForSync.HasValue)
+                values.Add(nameof(WaitForSync).ToCamelCase(), WaitForSync.ToString().ToLowerInvariant());
+            if (ReturnNew.HasValue)
+                values.Add(nameof(ReturnNew).ToCamelCase(), ReturnNew.ToString().ToLowerInvariant());
+            if (ReturnOld.HasValue)
+                values.Add(nameof(ReturnOld).ToCamelCase(), ReturnOld.ToString().ToLowerInvariant());
+            if (Silent.HasValue)
+                values.Add(nameof(Silent).ToCamelCase(), Silent.ToString().ToLowerInvariant());
+            if (Overwrite.HasValue)
+                values.Add(nameof(Overwrite).ToCamelCase(), Overwrite.ToString().ToLowerInvariant());
         }
     }
 }

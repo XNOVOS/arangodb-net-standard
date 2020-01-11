@@ -10,7 +10,7 @@ namespace ArangoDBNetStandard.Transport.Http
 {
     public class HttpApiClientResponseContent : IApiClientResponseContent
     {
-        private HttpContent content;
+        private readonly HttpContent content;
 
         public HttpApiClientResponseContent(HttpContent content)
         {

@@ -7,13 +7,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ArangoDBNetStandardTest.AuthApi;
 using Xunit;
 
 namespace ArangoDBNetStandardTest.Docs
 {
     public class UsageTest: IClassFixture<UsageTestFixture>
     {
-        private string _arangoDbHost;
+        private readonly string _arangoDbHost;
 
         public UsageTest(UsageTestFixture fixture)
         {
@@ -46,8 +47,8 @@ namespace ArangoDBNetStandardTest.Docs
             using (var systemDbTransport = HttpApiTransport.UsingBasicAuth(
                 new Uri($"http://{_arangoDbHost}:8529/"),
                 "_system",
-                "root",
-                "root"))
+                ArangoDBTestSettings.RootUsername,
+                ArangoDBTestSettings.RootPassword))
             {
                 var systemDb = new DatabaseApiClient(systemDbTransport);
 
@@ -108,7 +109,7 @@ namespace ArangoDBNetStandardTest.Docs
                   FILTER doc.ItemNumber == 123456 
                   RETURN doc");
 
-            MyClassDocument item = response.Result.First();
+            MyClassDocument item = response.Results.First();
 
             // Partially update document
             await adb.Document.PatchDocumentAsync<object, object>(

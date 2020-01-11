@@ -1,13 +1,21 @@
 ﻿using System.Net;
+using ArangoDBNetStandard.DocumentApi.Models;
+using Newtonsoft.Json;
 
 namespace ArangoDBNetStandard.CollectionApi.Models
 {
-    public class DeleteCollectionResponse
+    public class DeleteCollectionResponse : ResponseBase
     {
-        public bool Error { get; set; }
+        public string Id { get; }
 
-        public HttpStatusCode Code { get; set; }
+        [JsonConstructor]
+        public DeleteCollectionResponse(bool error, HttpStatusCode code, string id) : base(new ApiResponse(error, code, null, null))
+        {
+            Id = id;
+        }
 
-        public string Id { get; set; }
+        public DeleteCollectionResponse(ApiResponse errorDetails) : base(errorDetails)
+        {
+        }
     }
 }

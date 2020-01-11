@@ -9,25 +9,22 @@ namespace ArangoDBNetStandard.UserApi
 {
     public class UserApiClient : ApiClientBase, IUserApiClient
     {
-        private IApiClientTransport _client;
-        private readonly string _userApiPath = "_api/user";
+        protected override string ApiRootPath => "_api/user";
 
-        public UserApiClient(IApiClientTransport client)
-            : base(new JsonNetApiClientSerialization())
+        public UserApiClient(IApiClientTransport transport)
+            : base(transport, new JsonNetApiClientSerialization())
         {
-            _client = client;
         }
 
-        public UserApiClient(IApiClientTransport client, IApiClientSerialization serializer)
-            : base(serializer)
+        public UserApiClient(IApiClientTransport transport, IApiClientSerialization serializer)
+            : base(transport, serializer)
         {
-            _client = client;
         }
 
         public async Task<DeleteUserResponse> DeleteUserAsync(string username)
         {
-            string uri = _userApiPath + "/" + WebUtility.HtmlEncode(username);
-            using (var response = await _client.DeleteAsync(uri))
+            string uri = ApiRootPath + "/" + WebUtility.HtmlEncode(username);
+            using (var response = await Transport.DeleteAsync(uri))
             {
                 if (response.IsSuccessStatusCode)
                 {
