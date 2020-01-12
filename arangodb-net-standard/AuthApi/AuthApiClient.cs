@@ -28,7 +28,7 @@ namespace ArangoDBNetStandard.AuthApi
         /// <param name="username">The username of the user for whom to generate a JWT token.</param>
         /// <param name="password">The user's password.</param>
         /// <returns>Object containing the encoded JWT token value.</returns>
-        public async Task<JwtTokenResponse> GetJwtTokenAsync(string username, string password)
+        public virtual async Task<JwtTokenResponse> GetJwtTokenAsync(string username, string password)
         {
             return await GetJwtTokenAsync(new JwtTokenRequestBody
             {
@@ -42,7 +42,7 @@ namespace ArangoDBNetStandard.AuthApi
         /// </summary>
         /// <param name="body">Object containing username and password.</param>
         /// <returns>Object containing the encoded JWT token value.</returns>
-        public async Task<JwtTokenResponse> GetJwtTokenAsync(JwtTokenRequestBody body)
+        public virtual async Task<JwtTokenResponse> GetJwtTokenAsync(JwtTokenRequestBody body)
         {
             byte[] content = GetContent(body, true, false);
             using (var response = await Transport.PostAsync(ApiRootPath, content))

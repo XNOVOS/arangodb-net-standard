@@ -38,7 +38,7 @@ namespace ArangoDBNetStandard.DatabaseApi
         /// </summary>
         /// <param name="request">The parameters required by this endpoint.</param>
         /// <returns></returns>
-        public async Task<PostDatabaseResponse> PostDatabaseAsync(PostDatabaseBody request, CancellationToken cancellationToken = default)
+        public virtual async Task<PostDatabaseResponse> PostDatabaseAsync(PostDatabaseBody request, CancellationToken cancellationToken = default)
         {
             return await PostRequestAsync(ApiRootPath, response => new PostDatabaseResponse(response), request, null,
                 cancellationToken);
@@ -51,7 +51,7 @@ namespace ArangoDBNetStandard.DatabaseApi
         /// </summary>
         /// <param name="databaseName"></param>
         /// <returns></returns>
-        public async Task<DeleteDatabaseResponse> DeleteDatabaseAsync(string databaseName, CancellationToken cancellationToken = default)
+        public virtual async Task<DeleteDatabaseResponse> DeleteDatabaseAsync(string databaseName, CancellationToken cancellationToken = default)
         {
             return await DeleteRequestAsync($"{ApiRootPath}/{WebUtility.UrlEncode(databaseName)}",
                 response => new DeleteDatabaseResponse(response), null, cancellationToken);
@@ -66,7 +66,7 @@ namespace ArangoDBNetStandard.DatabaseApi
         /// available for the current user.
         /// </remarks>
         /// <returns></returns>
-        public async Task<GetDatabasesResponse> GetDatabasesAsync(CancellationToken cancellationToken = default)
+        public virtual async Task<GetDatabasesResponse> GetDatabasesAsync(CancellationToken cancellationToken = default)
         {
             return await GetRequestAsync(ApiRootPath, response => new GetDatabasesResponse(response), null,
                 cancellationToken);
@@ -77,7 +77,7 @@ namespace ArangoDBNetStandard.DatabaseApi
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<GetDatabasesResponse> GetUserDatabasesAsync(CancellationToken cancellationToken = default)
+        public virtual async Task<GetDatabasesResponse> GetUserDatabasesAsync(CancellationToken cancellationToken = default)
         {
             return await GetRequestAsync(ApiRootPath + "/user", response => new GetDatabasesResponse(response), null,
                 cancellationToken);
@@ -88,7 +88,7 @@ namespace ArangoDBNetStandard.DatabaseApi
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<GetCurrentDatabaseInfoResponse> GetCurrentDatabaseInfoAsync(
+        public virtual async Task<GetCurrentDatabaseInfoResponse> GetCurrentDatabaseInfoAsync(
             CancellationToken cancellationToken = default)
         {
             return await GetRequestAsync(ApiRootPath + "/current",

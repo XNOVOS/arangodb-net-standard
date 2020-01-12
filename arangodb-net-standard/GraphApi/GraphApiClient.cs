@@ -39,7 +39,7 @@ namespace ArangoDBNetStandard.GraphApi
         /// </summary>
         /// <param name="postGraphBody">The information of the graph to create.</param>
         /// <returns></returns>
-        public async Task<PostGraphResponse> PostGraphAsync(
+        public virtual async Task<PostGraphResponse> PostGraphAsync(
             PostGraphBody postGraphBody,
             PostGraphQuery query = null,
             CancellationToken cancellationToken = default)
@@ -57,7 +57,7 @@ namespace ArangoDBNetStandard.GraphApi
         /// in ArangoDB 4.5.2 and below, in which case you can use <see cref="GraphResult._key"/> instead.
         /// </remarks>
         /// <returns></returns>
-        public async Task<GetGraphsResponse> GetGraphsAsync(CancellationToken cancellationToken = default)
+        public virtual async Task<GetGraphsResponse> GetGraphsAsync(CancellationToken cancellationToken = default)
         {
             return await GetRequestAsync(ApiRootPath, response => new GetGraphsResponse(response), null,
                 cancellationToken);
@@ -72,7 +72,7 @@ namespace ArangoDBNetStandard.GraphApi
         /// <param name="graphName"></param>
         /// <param name="body"></param>
         /// <returns></returns>
-        public async Task<DeleteGraphResponse> DeleteGraphAsync(string graphName, DeleteGraphOptions query = null,
+        public virtual async Task<DeleteGraphResponse> DeleteGraphAsync(string graphName, DeleteGraphOptions query = null,
             CancellationToken cancellationToken = default)
         {
             return await DeleteRequestAsync($"{ApiRootPath}/{WebUtility.UrlEncode(graphName)}",
@@ -86,7 +86,7 @@ namespace ArangoDBNetStandard.GraphApi
         /// </summary>
         /// <param name="graphName"></param>
         /// <returns></returns>
-        public async Task<GetGraphResponse> GetGraphAsync(string graphName, CancellationToken cancellationToken = default)
+        public virtual async Task<GetGraphResponse> GetGraphAsync(string graphName, CancellationToken cancellationToken = default)
         {
             return await GetRequestAsync($"{ApiRootPath}/{WebUtility.UrlEncode(graphName)}",
                 response => new GetGraphResponse(response), null, cancellationToken);
@@ -98,7 +98,7 @@ namespace ArangoDBNetStandard.GraphApi
         /// </summary>
         /// <param name="graph">The name of the graph.</param>
         /// <returns></returns>
-        public async Task<GetVertexCollectionsResponse> GetVertexCollectionsAsync(string graphName, CancellationToken cancellationToken = default)
+        public virtual async Task<GetVertexCollectionsResponse> GetVertexCollectionsAsync(string graphName, CancellationToken cancellationToken = default)
         {
             return await GetRequestAsync($"{ApiRootPath}{'/'}{WebUtility.UrlEncode(graphName)}/vertex",
                 response => new GetVertexCollectionsResponse(response), null, cancellationToken);
@@ -110,7 +110,7 @@ namespace ArangoDBNetStandard.GraphApi
         /// </summary>
         /// <param name="graphName"></param>
         /// <returns></returns>
-        public async Task<GetEdgeCollectionsResponse> GetEdgeCollectionsAsync(string graphName, CancellationToken cancellationToken = default)
+        public virtual async Task<GetEdgeCollectionsResponse> GetEdgeCollectionsAsync(string graphName, CancellationToken cancellationToken = default)
         {
             return await GetRequestAsync($"{ApiRootPath}{'/'}{WebUtility.UrlEncode(graphName)}/edge",
                 response => new GetEdgeCollectionsResponse(response), null, cancellationToken);
@@ -129,7 +129,7 @@ namespace ArangoDBNetStandard.GraphApi
         /// <param name="graphName">The name of the graph.</param>
         /// <param name="body">The information of the edge definition.</param>
         /// <returns></returns>
-        public async Task<PostEdgeDefinitionResponse> PostEdgeDefinitionAsync(
+        public virtual async Task<PostEdgeDefinitionResponse> PostEdgeDefinitionAsync(
             string graphName,
             PostEdgeDefinitionBody body,
             CancellationToken cancellationToken = default)
@@ -146,7 +146,7 @@ namespace ArangoDBNetStandard.GraphApi
         /// <param name="graphName">The name of the graph.</param>
         /// <param name="body">The information of the vertex collection.</param>
         /// <returns></returns>
-        public async Task<PostVertexCollectionResponse> PostVertexCollectionAsync(
+        public virtual async Task<PostVertexCollectionResponse> PostVertexCollectionAsync(
             string graphName,
             PostVertexCollectionBody body,
             CancellationToken cancellationToken = default)
@@ -165,7 +165,7 @@ namespace ArangoDBNetStandard.GraphApi
         /// <param name="vertex"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        public async Task<PostVertexResponse<T>> PostVertexAsync<T>(
+        public virtual async Task<PostVertexResponse<T>> PostVertexAsync<T>(
             string graphName,
             string collectionName,
             T vertex,
@@ -187,7 +187,7 @@ namespace ArangoDBNetStandard.GraphApi
         /// <param name="collectionName"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        public async Task<DeleteEdgeDefinitionResponse> DeleteEdgeDefinitionAsync(
+        public virtual async Task<DeleteEdgeDefinitionResponse> DeleteEdgeDefinitionAsync(
             string graphName,
             string collectionName,
             DeleteEdgeDefinitionOptions query = null,
@@ -209,7 +209,7 @@ namespace ArangoDBNetStandard.GraphApi
         /// <param name="collectionName"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        public async Task<DeleteVertexCollectionResponse> DeleteVertexCollectionAsync(
+        public virtual async Task<DeleteVertexCollectionResponse> DeleteVertexCollectionAsync(
             string graphName,
             string collectionName,
             DeleteVertexCollectionOptions query = null,
@@ -234,7 +234,7 @@ namespace ArangoDBNetStandard.GraphApi
         /// <param name="collectionName">The name of the edge collection the edge belongs to.</param>
         /// <param name="edge">The edge to create.</param>
         /// <returns></returns>
-        public async Task<PostEdgeResponse<T>> PostEdgeAsync<T>(
+        public virtual async Task<PostEdgeResponse<T>> PostEdgeAsync<T>(
             string graphName,
             string collectionName,
             T edge,
@@ -277,7 +277,7 @@ namespace ArangoDBNetStandard.GraphApi
         /// <param name="edgeHandle">The document-handle of the edge document.</param>
         /// <param name="query"></param>
         /// <returns></returns>
-        public async Task<GetEdgeResponse<T>> GetEdgeAsync<T>(
+        public virtual async Task<GetEdgeResponse<T>> GetEdgeAsync<T>(
             string graphName,
             string edgeHandle,
             GetEdgeQuery query = null,
@@ -298,7 +298,7 @@ namespace ArangoDBNetStandard.GraphApi
         /// <param name="edgeKey">The _key attribute of the edge.</param>
         /// <param name="query"></param>
         /// <returns></returns>
-        public async Task<DeleteEdgeResponse<T>> DeleteEdgeAsync<T>(
+        public virtual async Task<DeleteEdgeResponse<T>> DeleteEdgeAsync<T>(
             string graphName,
             string collectionName,
             string edgeKey,
@@ -318,7 +318,7 @@ namespace ArangoDBNetStandard.GraphApi
         /// <param name="vertexKey"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        public async Task<GetVertexResponse<T>> GetVertexAsync<T>(
+        public virtual async Task<GetVertexResponse<T>> GetVertexAsync<T>(
             string graphName,
             string collectionName,
             string vertexKey,
@@ -339,7 +339,7 @@ namespace ArangoDBNetStandard.GraphApi
         /// <param name="vertexKey"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        public async Task<DeleteVertexResponse<T>> DeleteVertexAsync<T>(
+        public virtual async Task<DeleteVertexResponse<T>> DeleteVertexAsync<T>(
             string graphName,
             string collectionName,
             string vertexKey,
@@ -365,7 +365,7 @@ namespace ArangoDBNetStandard.GraphApi
         /// <param name="body"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        public async Task<PatchVertexResponse<TReturned>> PatchVertexAsync<TPatch, TReturned>(
+        public virtual async Task<PatchVertexResponse<TReturned>> PatchVertexAsync<TPatch, TReturned>(
             string graphName,
             string collectionName,
             string vertexKey,
@@ -390,7 +390,7 @@ namespace ArangoDBNetStandard.GraphApi
         /// <param name="edge"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        public async Task<PutEdgeResponse<T>> PutEdgeAsync<T>(
+        public virtual async Task<PutEdgeResponse<T>> PutEdgeAsync<T>(
             string graphName,
             string collectionName,
             string edgeKey,
@@ -413,7 +413,7 @@ namespace ArangoDBNetStandard.GraphApi
         /// <param name="body"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        public async Task<PutEdgeDefinitionResponse> PutEdgeDefinitionAsync(
+        public virtual async Task<PutEdgeDefinitionResponse> PutEdgeDefinitionAsync(
             string graphName,
             string collectionName,
             PutEdgeDefinitionBody body,
@@ -438,7 +438,7 @@ namespace ArangoDBNetStandard.GraphApi
         /// <param name="edge"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        public async Task<PatchEdgeResponse<TReturned>> PatchEdgeAsync<TPatch, TReturned>(
+        public virtual async Task<PatchEdgeResponse<TReturned>> PatchEdgeAsync<TPatch, TReturned>(
             string graphName,
             string collectionName,
             string edgeKey,
@@ -462,7 +462,7 @@ namespace ArangoDBNetStandard.GraphApi
         /// <param name="vertex"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        public async Task<PutVertexResponse<T>> PutVertexAsync<T>(
+        public virtual async Task<PutVertexResponse<T>> PutVertexAsync<T>(
             string graphName,
             string collectionName,
             string key,

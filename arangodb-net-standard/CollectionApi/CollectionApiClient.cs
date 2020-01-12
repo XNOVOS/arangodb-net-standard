@@ -36,7 +36,7 @@ namespace ArangoDBNetStandard.CollectionApi
         {
         }
 
-        public async Task<PostCollectionResponse> PostCollectionAsync(PostCollectionBody body,
+        public virtual async Task<PostCollectionResponse> PostCollectionAsync(PostCollectionBody body,
             PostCollectionOptions options = null, CancellationToken cancellationToken = default)
         {
             return await PostRequestAsync(
@@ -45,7 +45,7 @@ namespace ArangoDBNetStandard.CollectionApi
                 body, options, cancellationToken);
         }
 
-        public async Task<DeleteCollectionResponse> DeleteCollectionAsync(string collectionName,
+        public virtual async Task<DeleteCollectionResponse> DeleteCollectionAsync(string collectionName,
             CancellationToken cancellationToken = default)
         {
             return await DeleteRequestAsync(ApiRootPath + "/" + WebUtility.UrlEncode(collectionName),
@@ -58,7 +58,7 @@ namespace ArangoDBNetStandard.CollectionApi
         /// </summary>
         /// <param name="collectionName"></param>
         /// <returns></returns>
-        public async Task<TruncateCollectionResponse> TruncateCollectionAsync(string collectionName,
+        public virtual async Task<TruncateCollectionResponse> TruncateCollectionAsync(string collectionName,
             CancellationToken cancellationToken = default)
         {
             return await PutRequestAsync(ApiRootPath + "/" + WebUtility.UrlEncode(collectionName) + "/truncate",
@@ -71,7 +71,7 @@ namespace ArangoDBNetStandard.CollectionApi
         /// </summary>
         /// <param name="collectionName"></param>
         /// <returns></returns>
-        public async Task<GetCollectionCountResponse> GetCollectionCountAsync(string collectionName,
+        public virtual async Task<GetCollectionCountResponse> GetCollectionCountAsync(string collectionName,
             CancellationToken cancellationToken = default)
         {
             return await GetRequestAsync($"{ApiRootPath}/{WebUtility.UrlEncode(collectionName)}/count",
@@ -84,7 +84,7 @@ namespace ArangoDBNetStandard.CollectionApi
         /// </summary>
         /// <param name="options"></param>
         /// <returns></returns>
-        public async Task<GetCollectionsResponse> GetCollectionsAsync(GetCollectionsOptions query = null,
+        public virtual async Task<GetCollectionsResponse> GetCollectionsAsync(GetCollectionsOptions query = null,
             CancellationToken cancellationToken = default)
         {
             return await GetRequestAsync(ApiRootPath, response => new GetCollectionsResponse(response), query,
@@ -97,7 +97,7 @@ namespace ArangoDBNetStandard.CollectionApi
         /// </summary>
         /// <param name="collectionName"></param>
         /// <returns></returns>
-        public async Task<GetCollectionResponse> GetCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
+        public virtual async Task<GetCollectionResponse> GetCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
         {
             return await GetRequestAsync(
                 ApiRootPath + "/" + WebUtility.UrlEncode(collectionName),
@@ -109,7 +109,7 @@ namespace ArangoDBNetStandard.CollectionApi
         /// </summary>
         /// <param name="options"></param>
         /// <returns></returns>
-        public async Task<GetCollectionPropertiesResponse> GetCollectionPropertiesAsync(string collectionName,
+        public virtual async Task<GetCollectionPropertiesResponse> GetCollectionPropertiesAsync(string collectionName,
             CancellationToken cancellationToken = default)
         {
             return await GetRequestAsync($"{ApiRootPath}/{WebUtility.UrlEncode(collectionName)}/properties",
@@ -125,7 +125,7 @@ namespace ArangoDBNetStandard.CollectionApi
         /// <param name="cancellationToken"></param>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<RenameCollectionResponse> RenameCollectionAsync(string collectionName,
+        public virtual async Task<RenameCollectionResponse> RenameCollectionAsync(string collectionName,
             RenameCollectionBody body, CancellationToken cancellationToken = default)
         {
             return await PutRequestAsync($"{ApiRootPath}/{WebUtility.UrlEncode(collectionName)}/rename",
@@ -139,7 +139,7 @@ namespace ArangoDBNetStandard.CollectionApi
         /// <param name="collectionName">Name of the collection</param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<GetCollectionRevisionResponse> GetCollectionRevisionAsync(string collectionName,
+        public virtual async Task<GetCollectionRevisionResponse> GetCollectionRevisionAsync(string collectionName,
             CancellationToken cancellationToken = default)
         {
             return await GetRequestAsync($"{ApiRootPath}/{WebUtility.UrlEncode(collectionName)}/revision",
@@ -154,7 +154,7 @@ namespace ArangoDBNetStandard.CollectionApi
         /// <param name="body"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<PutCollectionPropertyResponse> PutCollectionPropertyAsync(string collectionName,
+        public virtual async Task<PutCollectionPropertyResponse> PutCollectionPropertyAsync(string collectionName,
             PutCollectionPropertyBody body, CancellationToken cancellationToken = default)
         {
             return await PutRequestAsync($"{ApiRootPath}/{collectionName}/properties",
@@ -169,7 +169,7 @@ namespace ArangoDBNetStandard.CollectionApi
         /// <param name="cancellationToken"></param>
         /// <param name="options"></param>
         /// <returns></returns>
-        public async Task<GetCollectionFiguresResponse> GetCollectionFiguresAsync(string collectionName,
+        public virtual async Task<GetCollectionFiguresResponse> GetCollectionFiguresAsync(string collectionName,
             CancellationToken cancellationToken = default)
         {
             return await GetRequestAsync($"{ApiRootPath}/{WebUtility.UrlEncode(collectionName)}/figures",

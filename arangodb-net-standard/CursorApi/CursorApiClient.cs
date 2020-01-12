@@ -49,7 +49,7 @@ namespace ArangoDBNetStandard.CursorApi
         /// <param name="memoryLimit"></param>
         /// <param name="ttl"></param>
         /// <returns></returns>
-        public async Task<CursorResponse<T>> PostCursorAsync<T>(
+        public virtual async Task<CursorResponse<T>> PostCursorAsync<T>(
                 string query,
                 Dictionary<string, object> bindVars = null,
                 PostCursorOptions options = null,
@@ -79,7 +79,7 @@ namespace ArangoDBNetStandard.CursorApi
         /// <param name="postCursorBody">Object encapsulating options and parameters of the query.</param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<CursorResponse<T>> PostCursorAsync<T>(PostCursorBody postCursorBody,
+        public virtual async Task<CursorResponse<T>> PostCursorAsync<T>(PostCursorBody postCursorBody,
             CancellationToken cancellationToken = default)
         {
             return await PostRequestAsync(ApiRootPath, response => new CursorResponse<T>(response), postCursorBody,
@@ -92,7 +92,7 @@ namespace ArangoDBNetStandard.CursorApi
         /// </summary>
         /// <param name="cursorId">The id of the cursor to delete.</param>
         /// <returns></returns>
-        public async Task<DeleteCursorResponse> DeleteCursorAsync(string cursorId, CancellationToken cancellationToken = default)
+        public virtual async Task<DeleteCursorResponse> DeleteCursorAsync(string cursorId, CancellationToken cancellationToken = default)
         {
             return await DeleteRequestAsync($"{ApiRootPath}/{WebUtility.UrlEncode(cursorId)}",
                 response => new DeleteCursorResponse(response), null, cancellationToken);
@@ -105,7 +105,7 @@ namespace ArangoDBNetStandard.CursorApi
         /// <param name="cursorId">ID of the existing query cursor.</param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<PutCursorResponse<T>> PutCursorAsync<T>(string cursorId, CancellationToken cancellationToken = default)
+        public virtual async Task<PutCursorResponse<T>> PutCursorAsync<T>(string cursorId, CancellationToken cancellationToken = default)
         {
             return await PutRequestAsync(ApiRootPath + "/" + WebUtility.UrlEncode(cursorId),
                 response => new PutCursorResponse<T>(response), null, null, cancellationToken);

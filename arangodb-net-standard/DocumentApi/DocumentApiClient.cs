@@ -48,7 +48,7 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <param name="cancellationToken"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        public async Task<PostDocumentResponse<T>> PostDocumentAsync<T>(string collectionName, T document,
+        public virtual async Task<PostDocumentResponse<T>> PostDocumentAsync<T>(string collectionName, T document,
             PostDocumentsOptions query = null, CancellationToken cancellationToken = default)
         {
             if (query != null && query.ContentSerializationOptions == null)
@@ -71,7 +71,7 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <param name="cancellationToken"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        public async Task<PostDocumentsResponse<T>> PostDocumentsAsync<T>(string collectionName,
+        public virtual async Task<PostDocumentsResponse<T>> PostDocumentsAsync<T>(string collectionName,
             IEnumerable<T> documents, PostDocumentsOptions query = null, CancellationToken cancellationToken = default)
         {
             return await PostRequestAsync($"{ApiRootPath}/{WebUtility.UrlEncode(collectionName)}",
@@ -86,7 +86,7 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <param name="documents"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        public async Task<PostDocumentsResponse<T>> PutDocumentsAsync<T>(string collectionName,
+        public virtual async Task<PostDocumentsResponse<T>> PutDocumentsAsync<T>(string collectionName,
             IEnumerable<T> documents, PutDocumentsOptions query = null, CancellationToken cancellationToken = default)
         {
             return await PutRequestAsync($"{ApiRootPath}/{WebUtility.UrlEncode(collectionName)}",
@@ -104,7 +104,7 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <param name="doc"></param>
         /// <param name="opts"></param>
         /// <returns></returns>
-        public async Task<PostDocumentResponse<T>> PutDocumentAsync<T>(string documentId, T document, PutDocumentsOptions query = null, CancellationToken cancellationToken = default)
+        public virtual async Task<PostDocumentResponse<T>> PutDocumentAsync<T>(string documentId, T document, PutDocumentsOptions query = null, CancellationToken cancellationToken = default)
         {
             ValidateDocumentId(documentId);
             return await PutRequestAsync($"{ApiRootPath}/{documentId}",
@@ -118,7 +118,7 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <param name="collectionName"></param>
         /// <param name="documentKey"></param>
         /// <returns></returns>
-        public async Task<GetDocumentResponse<T>> GetDocumentAsync<T>(string collectionName, string documentKey,
+        public virtual async Task<GetDocumentResponse<T>> GetDocumentAsync<T>(string collectionName, string documentKey,
             CancellationToken cancellationToken = default)
         {
             return await GetDocumentAsync<T>(
@@ -131,7 +131,7 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <typeparam name="T"></typeparam>
         /// <param name="documentId"></param>
         /// <returns></returns>
-        public async Task<GetDocumentResponse<T>> GetDocumentAsync<T>(string documentId, CancellationToken cancellationToken = default)
+        public virtual async Task<GetDocumentResponse<T>> GetDocumentAsync<T>(string documentId, CancellationToken cancellationToken = default)
         {
             ValidateDocumentId(documentId);
             return await GetRequestAsync($"{ApiRootPath}/{documentId}",
@@ -151,7 +151,7 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <param name="documentKey"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        public async Task<DeleteDocumentResponse<object>> DeleteDocumentAsync(string collectionName, string documentKey,
+        public virtual async Task<DeleteDocumentResponse<object>> DeleteDocumentAsync(string collectionName, string documentKey,
             DeleteDocumentsOptions query = null, CancellationToken cancellationToken = default)
         {
             return await DeleteDocumentAsync<object>(
@@ -170,7 +170,7 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <param name="documentId"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        public async Task<DeleteDocumentResponse<object>> DeleteDocumentAsync(string documentId,
+        public virtual async Task<DeleteDocumentResponse<object>> DeleteDocumentAsync(string documentId,
             DeleteDocumentsOptions query = null, CancellationToken cancellationToken = default)
         {
             return await DeleteDocumentAsync<object>(documentId, query, cancellationToken);
@@ -190,7 +190,7 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <param name="selectors"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        public async Task<DeleteDocumentsResponse<object>> DeleteDocumentsAsync(string collectionName,
+        public virtual async Task<DeleteDocumentsResponse<object>> DeleteDocumentsAsync(string collectionName,
             IEnumerable<string> selectors, DeleteDocumentsOptions query = null, CancellationToken cancellationToken = default)
         {
             return await DeleteDocumentsAsync<object>(collectionName, selectors, query, cancellationToken);
@@ -204,7 +204,7 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <param name="documentKey"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        public async Task<DeleteDocumentResponse<T>> DeleteDocumentAsync<T>(string collectionName, string documentKey, DeleteDocumentsOptions query = null, CancellationToken cancellationToken = default)
+        public virtual async Task<DeleteDocumentResponse<T>> DeleteDocumentAsync<T>(string collectionName, string documentKey, DeleteDocumentsOptions query = null, CancellationToken cancellationToken = default)
         {
             return await DeleteDocumentAsync<T>(
                 $"{WebUtility.UrlEncode(collectionName)}/{WebUtility.UrlEncode(documentKey)}", query,
@@ -217,7 +217,7 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <param name="documentId"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        public async Task<DeleteDocumentResponse<T>> DeleteDocumentAsync<T>(string documentId,
+        public virtual async Task<DeleteDocumentResponse<T>> DeleteDocumentAsync<T>(string documentId,
             DeleteDocumentsOptions query = null, CancellationToken cancellationToken = default)
         {
             ValidateDocumentId(documentId);
@@ -234,7 +234,7 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <param name="selectors"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        public async Task<DeleteDocumentsResponse<T>> DeleteDocumentsAsync<T>(string collectionName,
+        public virtual async Task<DeleteDocumentsResponse<T>> DeleteDocumentsAsync<T>(string collectionName,
             IEnumerable<string> selectors, DeleteDocumentsOptions query = null, CancellationToken cancellationToken = default)
         {
             return await DeleteRequestAsync($"{ApiRootPath}/{WebUtility.UrlEncode(collectionName)}",
@@ -266,7 +266,7 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <param name="cancellationToken"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        public async Task<PatchDocumentsResponse<TResponse>> PatchDocumentsAsync<TPatch, TResponse>(
+        public virtual async Task<PatchDocumentsResponse<TResponse>> PatchDocumentsAsync<TPatch, TResponse>(
             string collectionName,
             IEnumerable<TPatch> patches,
             PatchDocumentsOptions query = null,
@@ -294,7 +294,7 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <param name="body"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        public async Task<PatchDocumentResponse<TResponse>> PatchDocumentAsync<TPatch, TResponse>(
+        public virtual async Task<PatchDocumentResponse<TResponse>> PatchDocumentAsync<TPatch, TResponse>(
             string collectionName,
             string documentKey,
             TPatch body,
@@ -324,7 +324,7 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <param name="body"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        public async Task<PatchDocumentResponse<TResponse>> PatchDocumentAsync<TPatch, TResponse>(
+        public virtual async Task<PatchDocumentResponse<TResponse>> PatchDocumentAsync<TPatch, TResponse>(
             string documentId,
             TPatch body,
             PatchDocumentOptions query = null,
@@ -351,7 +351,7 @@ namespace ArangoDBNetStandard.DocumentApi
         /// 412: is returned if an “If-Match” header is given and the found document has a different version. The response will also contain the found document’s current revision in the Etag header.
         /// </remarks>
         /// <returns></returns>
-        public async Task<HeadDocumentResponse> HeadDocumentAsync(
+        public virtual async Task<HeadDocumentResponse> HeadDocumentAsync(
             string collectionName,
             string documentKey,
             HeadDocumentHeader headers = null,
@@ -378,7 +378,7 @@ namespace ArangoDBNetStandard.DocumentApi
         /// 412: is returned if an “If-Match” header is given and the found document has a different version. The response will also contain the found document’s current revision in the Etag header.
         /// </remarks>
         /// <returns></returns>
-        public async Task<HeadDocumentResponse> HeadDocumentAsync(string documentId, HeadDocumentHeader headers = null, CancellationToken cancellationToken = default)
+        public virtual async Task<HeadDocumentResponse> HeadDocumentAsync(string documentId, HeadDocumentHeader headers = null, CancellationToken cancellationToken = default)
         {
             ValidateDocumentId(documentId);
             string uri = ApiRootPath + "/" + documentId;

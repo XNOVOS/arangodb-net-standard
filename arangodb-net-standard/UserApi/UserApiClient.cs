@@ -22,7 +22,7 @@ namespace ArangoDBNetStandard.UserApi
         {
         }
 
-        public async Task<DeleteUserResponse> DeleteUserAsync(string username, CancellationToken cancellationToken = default)
+        public virtual async Task<DeleteUserResponse> DeleteUserAsync(string username, CancellationToken cancellationToken = default)
         {
             return await DeleteRequestAsync($"{ApiRootPath}/{WebUtility.HtmlEncode(username)}",
                 response => new DeleteUserResponse(response), null, cancellationToken);

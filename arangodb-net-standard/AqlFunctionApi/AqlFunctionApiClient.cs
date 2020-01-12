@@ -42,7 +42,7 @@ namespace ArangoDBNetStandard.AqlFunctionApi
         /// </summary>
         /// <param name="body">The body of the request containing required properties.</param>
         /// <returns></returns>
-        public async Task<PostAqlFunctionResponse> PostAqlFunctionAsync(PostAqlFunctionBody body, CancellationToken cancellationToken = default)
+        public virtual async Task<PostAqlFunctionResponse> PostAqlFunctionAsync(PostAqlFunctionBody body, CancellationToken cancellationToken = default)
         {
             return await PostRequestAsync(ApiRootPath, response => new PostAqlFunctionResponse(response), body, null,
                 cancellationToken);
@@ -55,7 +55,7 @@ namespace ArangoDBNetStandard.AqlFunctionApi
         /// <param name="name">The name of the function or function group (namespace).</param>
         /// <param name="query">The query parameters of the request.</param>
         /// <returns></returns>
-        public async Task<DeleteAqlFunctionResponse> DeleteAqlFunctionAsync(
+        public virtual async Task<DeleteAqlFunctionResponse> DeleteAqlFunctionAsync(
             string name,
             DeleteAqlFunctionQuery query = null,
             CancellationToken cancellationToken = default)
@@ -68,7 +68,7 @@ namespace ArangoDBNetStandard.AqlFunctionApi
         /// Get all registered AQL user functions.
         /// </summary>
         /// <returns></returns>
-        public async Task<GetAqlFunctionsResponse> GetAqlFunctionsAsync(GetAqlFunctionsQuery query = null, CancellationToken cancellationToken = default)
+        public virtual async Task<GetAqlFunctionsResponse> GetAqlFunctionsAsync(GetAqlFunctionsQuery query = null, CancellationToken cancellationToken = default)
         {
             return await GetRequestAsync(ApiRootPath, response => new GetAqlFunctionsResponse(response), query,
                 cancellationToken);
