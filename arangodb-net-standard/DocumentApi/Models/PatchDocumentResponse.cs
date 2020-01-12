@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using ArangoDBNetStandard.Models;
+using Newtonsoft.Json;
 
 namespace ArangoDBNetStandard.DocumentApi.Models
 {
@@ -17,14 +18,14 @@ namespace ArangoDBNetStandard.DocumentApi.Models
         public string _id { get; }
 
         [JsonConstructor]
-        public PatchDocumentResponse(string _key, string _rev, string _id, string _oldRev, T New, T Old) : base(ApiResponse.SuccessfulResponse)
+        public PatchDocumentResponse(string _key, string _rev, string _id, string _oldRev, T @new, T old) : base(ApiResponse.SuccessfulResponse)
         {
             this._key = _key;
             this._rev = _rev;
             this._id = _id;
             this._oldRev = _oldRev;
-            this.New = New;
-            this.Old = Old;
+            New = @new;
+            Old = old;
         }
         public PatchDocumentResponse(ApiResponse errorDetails) : base(errorDetails)
         {

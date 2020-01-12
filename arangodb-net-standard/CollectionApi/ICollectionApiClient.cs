@@ -11,7 +11,7 @@ namespace ArangoDBNetStandard.CollectionApi
     {
         Task<PostCollectionResponse> PostCollectionAsync(
            PostCollectionBody body,
-           PostCollectionQuery options = null,
+           PostCollectionOptions options = null,
            CancellationToken cancellationToken = default);
 
         Task<DeleteCollectionResponse> DeleteCollectionAsync(string collectionName,
@@ -41,7 +41,7 @@ namespace ArangoDBNetStandard.CollectionApi
         /// </summary>
         /// <param name="query"></param>
         /// <returns></returns>
-        Task<GetCollectionsResponse> GetCollectionsAsync(GetCollectionsQuery query = null,
+        Task<GetCollectionsResponse> GetCollectionsAsync(GetCollectionsOptions query = null,
             CancellationToken cancellationToken = default);
 
         /// <summary>

@@ -76,6 +76,7 @@ namespace ArangoDBNetStandardTest.Transport.Http
                     nameof(HttpApiTransportTest)))
             {
                 var authClient = new AuthApiClient(transport);
+                authClient.ThrowErrorsAsExceptions = true;
 
                 var jwtTokenResponse = await authClient.GetJwtTokenAsync(
                     new JwtTokenRequestBody
@@ -86,7 +87,7 @@ namespace ArangoDBNetStandardTest.Transport.Http
 
                 jwtToken = jwtTokenResponse.Jwt;
 
-                DatabaseApiClient databaseApi = new DatabaseApiClient(transport);
+                DatabaseApiClient databaseApi = new DatabaseApiClient(transport) {ThrowErrorsAsExceptions = true};
 
                 // Not authorized, should throw.
                 var ex = await Assert.ThrowsAsync<ApiErrorException>(async () =>

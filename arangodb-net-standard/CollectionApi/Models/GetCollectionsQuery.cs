@@ -1,18 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using ArangoDBNetStandard.Models;
 
 namespace ArangoDBNetStandard.CollectionApi.Models
 {
-    public class GetCollectionsQuery : RequestOptionsBase
+    public class GetCollectionsOptions : RequestOptionsBase
     {
         public bool? ExcludeSystem { get; set; }
-
-        protected override void PrepareQueryStringValues(IDictionary<string, string> values)
-        {
-            if (ExcludeSystem.HasValue)
-            {
-                values.Add(nameof(ExcludeSystem).ToCamelCase(), ExcludeSystem.ToString().ToLowerInvariant());
-            }
-        }
     }
 }

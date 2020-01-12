@@ -1,17 +1,28 @@
 ﻿using System.Net;
+using ArangoDBNetStandard.Models;
+using JetBrains.Annotations;
+using Newtonsoft.Json;
 
 namespace ArangoDBNetStandard.GraphApi.Models
 {
-    public class PatchVertexResponse<T>
+    public class PatchVertexResponse<T> : ResponseBase
     {
-        public T New { get; set; }
+        public T New { get; }
 
-        public T Old { get; set; }
+        public T Old { get; }
 
-        public HttpStatusCode Code { get; set; }
+        public PatchVertexResult Vertex { get; }
 
-        public PatchVertexResult Vertex { get; set; }
+        [JsonConstructor]
+        public PatchVertexResponse(T @new, T old, HttpStatusCode code, bool error, PatchVertexResult vertex) : base(new ApiResponse(error, code))
+        {
+            New = @new;
+            Old = old;
+            Vertex = vertex;
+        }
 
-        public bool Error { get; set; }
+        public PatchVertexResponse([NotNull] ApiResponse responseDetails) : base(responseDetails)
+        {
+        }
     }
 }

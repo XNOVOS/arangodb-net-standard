@@ -1,19 +1,10 @@
 ﻿using System.Collections.Generic;
+using ArangoDBNetStandard.Models;
 
 namespace ArangoDBNetStandard.GraphApi.Models
 {
-    public class DeleteVertexCollectionQuery
+    public class DeleteVertexCollectionOptions : RequestOptionsBase
     {
         public bool? DropCollection { get; set; }
-
-        internal string ToQueryString()
-        {
-            List<string> query = new List<string>();
-            if (DropCollection != null)
-            {
-                query.Add("dropCollection=" + DropCollection.ToString().ToLower());
-            }
-            return string.Join("&", query);
-        }
     }
 }

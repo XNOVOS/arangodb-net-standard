@@ -67,13 +67,13 @@ namespace ArangoDBNetStandardTest
                 var dbApiClient = new DatabaseApiClient(systemDbClient, GetApiClientSerialization());
                 try
                 {
-                    var postDatabaseResponse = await dbApiClient.PostDatabaseAsync(new PostDatabaseBody
+                    await dbApiClient.PostDatabaseAsync(new PostDatabaseBody
                     {
                         Name = dbName,
                         Users = users
                     });
                 }
-                catch (ApiErrorException ex) when (ex.ApiError.ErrorNum == 1207)
+                catch (ApiErrorException ex) when (ex.ResponseDetails.ErrorNum == 1207)
                 {
                     // database must exist already
                     Console.WriteLine(ex.Message);

@@ -1,4 +1,5 @@
-﻿using ArangoDBNetStandard.UserApi.Models;
+﻿using System.Threading;
+using ArangoDBNetStandard.UserApi.Models;
 using System.Threading.Tasks;
 
 namespace ArangoDBNetStandard.UserApi
@@ -8,6 +9,6 @@ namespace ArangoDBNetStandard.UserApi
     /// </summary>
     public interface IUserApiClient
     {
-        Task<DeleteUserResponse> DeleteUserAsync(string username);
+        Task<DeleteUserResponse> DeleteUserAsync(string username, CancellationToken cancellationToken = default);
     }
 }

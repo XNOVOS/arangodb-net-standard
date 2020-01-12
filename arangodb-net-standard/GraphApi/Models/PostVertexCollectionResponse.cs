@@ -1,25 +1,21 @@
 ﻿using System.Net;
+using ArangoDBNetStandard.Models;
+using Newtonsoft.Json;
 
 namespace ArangoDBNetStandard.GraphApi.Models
 {
     /// <summary>
     /// Represents a response containing information about the modified graph.
     /// </summary>
-    public class PostVertexCollectionResponse
+    public class PostVertexCollectionResponse : GraphResponse
     {
-        /// <summary>
-        /// Indicates whether an error occurred (false in this case).
-        /// </summary>
-        public bool Error { get; set; }
+        [JsonConstructor]
+        public PostVertexCollectionResponse(HttpStatusCode code, GraphResult graph) : base(code, graph)
+        {
+        }
 
-        /// <summary>
-        /// The HTTP status code.
-        /// </summary>
-        public HttpStatusCode Code { get; set; }
-
-        /// <summary>
-        /// The information about the modified graph.
-        /// </summary>
-        public GraphResult Graph { get; set; }
+        public PostVertexCollectionResponse(ApiResponse errorDetails) : base(errorDetails)
+        {
+        }
     }
 }

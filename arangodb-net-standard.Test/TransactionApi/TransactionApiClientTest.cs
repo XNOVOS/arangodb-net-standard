@@ -16,6 +16,7 @@ namespace ArangoDBNetStandardTest.TransactionApi
             _adb = fixture.ArangoDBClient;
             _adb.Collection.TruncateCollectionAsync(fixture.TestCollection1).Wait();
             _adb.Collection.TruncateCollectionAsync(fixture.TestCollection2).Wait();
+            _adb.Transaction.ThrowErrorsAsExceptions = false;
         }
 
         [Fact]
@@ -61,6 +62,8 @@ namespace ArangoDBNetStandardTest.TransactionApi
         [Fact]
         public async Task PostTransaction_ShouldThrow_WhenFunctionDefinitionHasSyntaxErrors()
         {
+            //TODO error handling
+            _adb.Transaction.ThrowErrorsAsExceptions = true;
             var ex = await Assert.ThrowsAsync<ApiErrorException>(async () => 
                 await _adb.Transaction.PostTransactionAsync<object>(new PostTransactionBody
                 {
@@ -70,18 +73,20 @@ namespace ArangoDBNetStandardTest.TransactionApi
                         Write = new[] { "test" }
                     }
                 }));
-            Assert.Equal(10, ex.ApiError.ErrorNum);
+            Assert.Equal(10, ex.ResponseDetails.ErrorNum);
         }
 
         [Fact]
         public async Task PostTransaction_ShouldThrow_WhenWriteCollectionIsNotDeclared()
         {
+            //TODO error handling
+            _adb.Transaction.ThrowErrorsAsExceptions = true;
             var ex = await Assert.ThrowsAsync<ApiErrorException>(async () =>
                 await _adb.Transaction.PostTransactionAsync<object>(new PostTransactionBody
                 {
                     Action = "function (params) { console.log('This is a test'); }"
                 }));
-            Assert.Equal(10, ex.ApiError.ErrorNum);
+            Assert.Equal(10, ex.ResponseDetails.ErrorNum);
         }
     }
 }

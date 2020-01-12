@@ -1,4 +1,4 @@
-namespace ArangoDBNetStandard
+namespace ArangoDBNetStandard.Models
 {
     public abstract class ResponseBaseWithDocumentProperties : ResponseBase
     {

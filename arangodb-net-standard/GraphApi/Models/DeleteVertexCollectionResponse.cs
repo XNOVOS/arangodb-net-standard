@@ -1,13 +1,18 @@
 ﻿using System.Net;
+using ArangoDBNetStandard.Models;
+using Newtonsoft.Json;
 
 namespace ArangoDBNetStandard.GraphApi.Models
 {
-    public class DeleteVertexCollectionResponse
+    public class DeleteVertexCollectionResponse : GraphResponse
     {
-        public bool Error { get; set; }
+        [JsonConstructor]
+        public DeleteVertexCollectionResponse(HttpStatusCode code, GraphResult graph) : base(code, graph)
+        {
+        }
 
-        public HttpStatusCode Code { get; set; }
-
-        public GraphResult Graph { get; set; }
+        public DeleteVertexCollectionResponse(ApiResponse errorDetails) : base(errorDetails)
+        {
+        }
     }
 }

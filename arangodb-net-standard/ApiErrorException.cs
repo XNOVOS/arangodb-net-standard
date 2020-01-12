@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Runtime.Serialization;
+using ArangoDBNetStandard.Models;
 
 namespace ArangoDBNetStandard
 {
     [Serializable]
     public class ApiErrorException : Exception
     {
-        public ApiResponse ApiError { get; set; }
+        public ApiResponse ResponseDetails { get; set; }
 
         public ApiErrorException()
         {
@@ -14,7 +15,7 @@ namespace ArangoDBNetStandard
 
         public ApiErrorException(ApiResponse error) : base(error.ErrorMessage)
         {
-            ApiError = error;
+            ResponseDetails = error;
         }
 
         public ApiErrorException(string message) : base(message)

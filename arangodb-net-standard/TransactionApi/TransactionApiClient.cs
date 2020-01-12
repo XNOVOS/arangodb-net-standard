@@ -1,4 +1,5 @@
-﻿using ArangoDBNetStandard.Serialization;
+﻿using System.Threading;
+using ArangoDBNetStandard.Serialization;
 using ArangoDBNetStandard.TransactionApi.Models;
 using ArangoDBNetStandard.Transport;
 using System.Threading.Tasks;
@@ -8,7 +9,7 @@ namespace ArangoDBNetStandard.TransactionApi
     /// <summary>
     /// Provides access to ArangoDB transaction API.
     /// </summary>
-    public class TransactionApiClient: ApiClientBase
+    public class TransactionApiClient: ApiClientBase, ITransactionApiClient
     {
         protected override string ApiRootPath => "_api/transaction";
 
@@ -39,19 +40,10 @@ namespace ArangoDBNetStandard.TransactionApi
         /// <typeparam name="T">Type to use for deserializing the object returned by the transaction function.</typeparam>
         /// <param name="body">Object containing information to submit in the POST transaction request.</param>
         /// <returns>Response from ArangoDB after processing the request.</returns>
-        public async Task<PostTransactionResponse<T>> PostTransactionAsync<T>(PostTransactionBody body)
+        public async Task<PostTransactionResponse<T>> PostTransactionAsync<T>(PostTransactionBody body, CancellationToken cancellationToken = default)
         {
-            var content = GetContent(body, true, true);
-            using (var response = await Transport.PostAsync(ApiRootPath, content))
-            {
-                var stream = await response.Content.ReadAsStreamAsync();
-                if (response.IsSuccessStatusCode)
-                {
-                    return DeserializeJsonFromStream<PostTransactionResponse<T>>(stream);
-                }
-                var error = DeserializeJsonFromStream<ApiResponse>(stream);
-                throw new ApiErrorException(error);
-            }
+            return await PostRequestAsync(ApiRootPath, response => new PostTransactionResponse<T>(response), body, null,
+                cancellationToken);
         }
     }
 }

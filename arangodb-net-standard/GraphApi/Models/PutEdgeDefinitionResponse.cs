@@ -1,13 +1,18 @@
 ﻿using System.Net;
+using ArangoDBNetStandard.Models;
+using Newtonsoft.Json;
 
 namespace ArangoDBNetStandard.GraphApi.Models
 {
-    public class PutEdgeDefinitionResponse
+    public class PutEdgeDefinitionResponse : GraphResponse
     {
-        public HttpStatusCode Code { get; set; }
+        [JsonConstructor]
+        public PutEdgeDefinitionResponse(HttpStatusCode code, GraphResult graph) : base(code, graph)
+        {
+        }
 
-        public bool Error { get; set; }
-
-        public GraphResult Graph { get; set; }
+        public PutEdgeDefinitionResponse(ApiResponse errorDetails) : base(errorDetails)
+        {
+        }
     }
 }

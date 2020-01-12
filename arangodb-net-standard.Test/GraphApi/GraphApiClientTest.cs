@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using ArangoDBNetStandard.Models;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace ArangoDBNetStandardTest.GraphApi
@@ -21,6 +23,7 @@ namespace ArangoDBNetStandardTest.GraphApi
         {
             _fixture = fixture;
             _client = fixture.ArangoDBClient.Graph;
+            _client.ThrowErrorsAsExceptions = false;
         }
 
         [Fact]
@@ -60,36 +63,49 @@ namespace ArangoDBNetStandardTest.GraphApi
                     }
                 }
             });
-            var query = new DeleteGraphQuery
+            var query = new DeleteGraphOptions
             {
                 DropCollections = false
             };
             var response = await _client.DeleteGraphAsync("temp_graph", query);
-            Assert.Equal(HttpStatusCode.Accepted, response.Code);
+            Assert.Equal(HttpStatusCode.Accepted, response.ResponseDetails.Code);
             Assert.True(response.Removed);
-            Assert.False(response.Error);
+            Assert.False(response.ResponseDetails.Error);
         }
 
         [Fact]
         public async Task DeleteGraphAsync_ShouldThrow_WhenNotFound()
         {
+            _client.ThrowErrorsAsExceptions = true;
             var exception = await Assert.ThrowsAsync<ApiErrorException>(async () =>
             {
-                await _client.DeleteGraphAsync("boggus_graph", new DeleteGraphQuery
+                await _client.DeleteGraphAsync("boggus_graph", new DeleteGraphOptions
                 {
                     DropCollections = false
                 });
             });
 
-            Assert.Equal(HttpStatusCode.NotFound, exception.ApiError.Code);
-            Assert.Equal(1924, exception.ApiError.ErrorNum); // GRAPH_NOT_FOUND
+            Assert.Equal(HttpStatusCode.NotFound, exception.ResponseDetails.Code);
+            Assert.Equal(1924, exception.ResponseDetails.ErrorNum); // GRAPH_NOT_FOUND
+        }
+        [Fact]
+        public async Task DeleteGraphAsync_ShouldReturnError_WhenNotFound()
+        {
+            DeleteGraphResponse deleteGraphResponse = await _client.DeleteGraphAsync("boggus_graph", new DeleteGraphOptions
+            {
+                DropCollections = false
+            });
+
+            Assert.False(deleteGraphResponse.IsSuccess);
+            Assert.Equal(HttpStatusCode.NotFound, deleteGraphResponse.ResponseDetails.Code);
+            Assert.Equal(1924, deleteGraphResponse.ResponseDetails.ErrorNum); // GRAPH_NOT_FOUND
         }
 
         [Fact]
         public async Task GetGraphAsync_ShouldSucceed()
         {
             var response = await _client.GetGraphAsync(_fixture.TestGraph);
-            Assert.Equal(HttpStatusCode.OK, response.Code);
+            Assert.Equal(HttpStatusCode.OK, response.ResponseDetails.Code);
             Assert.Equal("_graphs/" + _fixture.TestGraph, response.Graph._id);
             Assert.NotEmpty(response.Graph.EdgeDefinitions);
             Assert.Empty(response.Graph.OrphanCollections);
@@ -104,9 +120,11 @@ namespace ArangoDBNetStandardTest.GraphApi
         [Fact]
         public async Task GetGraphAsync_ShouldThrow_WhenNotFound()
         {
+            //TODO Error handling test
+            _client.ThrowErrorsAsExceptions = true;
             var exception = await Assert.ThrowsAsync<ApiErrorException>(async () => await _client.GetGraphAsync("bogus_graph"));
-            Assert.Equal(HttpStatusCode.NotFound, exception.ApiError.Code);
-            Assert.Equal(1924, exception.ApiError.ErrorNum); // GRAPH_NOT_FOUND
+            Assert.Equal(HttpStatusCode.NotFound, exception.ResponseDetails.Code);
+            Assert.Equal(1924, exception.ResponseDetails.ErrorNum); // GRAPH_NOT_FOUND
         }
 
         [Fact]
@@ -147,17 +165,19 @@ namespace ArangoDBNetStandardTest.GraphApi
 
             GetVertexCollectionsResponse response = await _client.GetVertexCollectionsAsync(graphName);
 
-            Assert.Equal(2, response.Collections.Count());
-            Assert.Contains("FromCollection", response.Collections);
-            Assert.Contains("ToCollection", response.Collections);
+            Assert.Equal(2, response.Count());
+            Assert.Contains("FromCollection", response);
+            Assert.Contains("ToCollection", response);
         }
 
         [Fact]
         public async Task GetVertexCollectionsAsync_ShouldThrow_WhenGraphDoesNotExist()
         {
+            //TODO Error handling test
+            _client.ThrowErrorsAsExceptions = true;
             var ex = await Assert.ThrowsAsync<ApiErrorException>(async () => await _client.GetVertexCollectionsAsync("GraphThatDoesNotExist"));
 
-            ApiResponse apiError = ex.ApiError;
+            ApiResponse apiError = ex.ResponseDetails;
 
             Assert.Equal(HttpStatusCode.NotFound, apiError.Code);
             Assert.Equal(1924, apiError.ErrorNum);
@@ -167,17 +187,19 @@ namespace ArangoDBNetStandardTest.GraphApi
         public async Task GetEdgeCollectionsAsync_ShouldSucceed()
         {
             var response = await _client.GetEdgeCollectionsAsync(_fixture.TestGraph);
-            Assert.Equal(HttpStatusCode.OK, response.Code);
-            Assert.NotEmpty(response.Collections);
-            Assert.False(response.Error);
+            Assert.Equal(HttpStatusCode.OK, response.ResponseDetails.Code);
+            Assert.NotEmpty(response);
+            Assert.False(response.ResponseDetails.Error);
         }
 
         [Fact]
         public async Task GetEdgeCollectionsAsync_ShouldThrow_WhenGraphIsNotFound()
         {
+            //TODO Error handling test
+            _client.ThrowErrorsAsExceptions = true;
             var exception = await Assert.ThrowsAsync<ApiErrorException>(async () => await _client.GetEdgeCollectionsAsync("bogus_graph"));
-            Assert.Equal(HttpStatusCode.NotFound, exception.ApiError.Code);
-            Assert.Equal(1924, exception.ApiError.ErrorNum); // GRAPH_NOT_FOUND
+            Assert.Equal(HttpStatusCode.NotFound, exception.ResponseDetails.Code);
+            Assert.Equal(1924, exception.ResponseDetails.ErrorNum); // GRAPH_NOT_FOUND
         }
 
         [Fact]
@@ -239,6 +261,8 @@ namespace ArangoDBNetStandardTest.GraphApi
         [Fact]
         public async Task PostGraphAsync_ShouldThrow_WhenGraphNameIsInvalid()
         {
+            //TODO Error handling test
+            _client.ThrowErrorsAsExceptions = true;
             var ex = await Assert.ThrowsAsync<ApiErrorException>(async () =>
             {
                 await _client.PostGraphAsync(new PostGraphBody
@@ -256,8 +280,8 @@ namespace ArangoDBNetStandardTest.GraphApi
                 });
             });
 
-            Assert.Equal(HttpStatusCode.BadRequest, ex.ApiError.Code);
-            Assert.Equal(1221, ex.ApiError.ErrorNum); // ARANGO_DOCUMENT_KEY_BAD
+            Assert.Equal(HttpStatusCode.BadRequest, ex.ResponseDetails.Code);
+            Assert.Equal(1221, ex.ResponseDetails.ErrorNum); // ARANGO_DOCUMENT_KEY_BAD
         }
 
         [Fact]
@@ -277,8 +301,8 @@ namespace ArangoDBNetStandardTest.GraphApi
                     To = new[] { "toclxx" },
                     Collection = "clxx"
                 });
-            Assert.Equal(HttpStatusCode.Accepted, response.Code);
-            Assert.False(response.Error);
+            Assert.Equal(HttpStatusCode.Accepted, response.ResponseDetails.Code);
+            Assert.False(response.ResponseDetails.Error);
             Assert.Single(response.Graph.EdgeDefinitions);
             Assert.Equal(tempGraph, response.Graph.Name);
             Assert.Equal("_graphs/" + tempGraph, response.Graph._id);
@@ -290,6 +314,8 @@ namespace ArangoDBNetStandardTest.GraphApi
         [Fact]
         public async Task PostEdgeDefinitionAsync_ShouldThrow_WhenGraphNotFound()
         {
+            //TODO Error handling test
+            _client.ThrowErrorsAsExceptions = true;
             var exception = await Assert.ThrowsAsync<ApiErrorException>(async () =>
             {
                 await _client.PostEdgeDefinitionAsync(
@@ -302,8 +328,8 @@ namespace ArangoDBNetStandardTest.GraphApi
                     });
             });
 
-            Assert.Equal(HttpStatusCode.NotFound, exception.ApiError.Code);
-            Assert.Equal(1924, exception.ApiError.ErrorNum); // GRAPH_NOT_FOUND
+            Assert.Equal(HttpStatusCode.NotFound, exception.ResponseDetails.Code);
+            Assert.Equal(1924, exception.ResponseDetails.ErrorNum); // GRAPH_NOT_FOUND
         }
 
         [Fact]
@@ -330,8 +356,8 @@ namespace ArangoDBNetStandardTest.GraphApi
                     Collection = clxToAdd
                 });
 
-            Assert.Equal(HttpStatusCode.Accepted, response.Code);
-            Assert.False(response.Error);
+            Assert.Equal(HttpStatusCode.Accepted, response.ResponseDetails.Code);
+            Assert.False(response.ResponseDetails.Error);
 
             GraphResult graph = response.Graph;
 
@@ -341,6 +367,8 @@ namespace ArangoDBNetStandardTest.GraphApi
         [Fact]
         public async Task PostVertexCollectionAsync_ShouldThrow_WhenGraphIsNotFound()
         {
+            //TODO Error handling test
+            _client.ThrowErrorsAsExceptions = true;
             string graphName = nameof(PostVertexCollectionAsync_ShouldThrow_WhenGraphIsNotFound);
 
             var ex = await Assert.ThrowsAsync<ApiErrorException>(async () =>
@@ -351,7 +379,7 @@ namespace ArangoDBNetStandardTest.GraphApi
                 });
             });
 
-            ApiResponse apiError = ex.ApiError;
+            ApiResponse apiError = ex.ResponseDetails;
 
             Assert.True(apiError.Error);
             Assert.Equal(HttpStatusCode.NotFound, apiError.Code);
@@ -387,27 +415,32 @@ namespace ArangoDBNetStandardTest.GraphApi
                 Name = clxToAdd + "_vtx"
             });
 
-            Assert.Equal(HttpStatusCode.Accepted, response.Code);
-            Assert.False(response.Error);
+            Assert.Equal(HttpStatusCode.Accepted, response.ResponseDetails.Code);
+            Assert.NotNull(response.Vertex._id);
+            Assert.False(response.ResponseDetails.Error);
             Assert.NotNull(response.Vertex);
         }
 
         [Fact]
         public async Task PostVertexAsync_ShouldThrow_WhenGraphIsNotFound()
         {
+            //TODO Error handling test
+            _client.ThrowErrorsAsExceptions = true;
             string graphName = nameof(PostVertexAsync_ShouldThrow_WhenGraphIsNotFound);
             string vertex = nameof(PostVertexAsync_ShouldThrow_WhenGraphIsNotFound) + "_vtx";
 
             var ex = await Assert.ThrowsAsync<ApiErrorException>(async () => await _client.PostVertexAsync(graphName, vertex, new { }));
 
-            Assert.True(ex.ApiError.Error);
-            Assert.Equal(HttpStatusCode.NotFound, ex.ApiError.Code);
-            Assert.Equal(1924, ex.ApiError.ErrorNum); // ERROR_GRAPH_NOT_FOUND
+            Assert.True(ex.ResponseDetails.Error);
+            Assert.Equal(HttpStatusCode.NotFound, ex.ResponseDetails.Code);
+            Assert.Equal(1924, ex.ResponseDetails.ErrorNum); // ERROR_GRAPH_NOT_FOUND
         }
 
         [Fact]
         public async Task PostVertexAsync_ShouldThrow_WhenVertexCollectionIsNotFound()
         {
+            //TODO Error handling test
+            _client.ThrowErrorsAsExceptions = true;
             // Create a new graph
             string graphName = nameof(PostVertexAsync_ShouldThrow_WhenVertexCollectionIsNotFound);
 
@@ -420,9 +453,9 @@ namespace ArangoDBNetStandardTest.GraphApi
 
             var ex = await Assert.ThrowsAsync<ApiErrorException>(async () => await _client.PostVertexAsync(graphName, vertex, new { }));
 
-            Assert.True(ex.ApiError.Error);
-            Assert.Equal(HttpStatusCode.NotFound, ex.ApiError.Code);
-            Assert.Equal(1203, ex.ApiError.ErrorNum); // ARANGO_DATA_SOURCE_NOT_FOUND
+            Assert.True(ex.ResponseDetails.Error);
+            Assert.Equal(HttpStatusCode.NotFound, ex.ResponseDetails.Code);
+            Assert.Equal(1203, ex.ResponseDetails.ErrorNum); // ARANGO_DATA_SOURCE_NOT_FOUND
         }
 
         [Fact]
@@ -453,14 +486,14 @@ namespace ArangoDBNetStandardTest.GraphApi
             var response = await _client.PostVertexAsync(graphName, clxToAdd, new
             {
                 Name = propertyName
-            }, new PostVertexQuery
+            }, new PostVertexOptions
             {
                 ReturnNew = true,
                 WaitForSync = true
             });
 
-            Assert.Equal(HttpStatusCode.Created, response.Code);
-            Assert.False(response.Error);
+            Assert.Equal(HttpStatusCode.Created, response.ResponseDetails.Code);
+            Assert.False(response.ResponseDetails.Error);
             Assert.NotNull(response.New);
             Assert.Equal(propertyName, response.New.Name);
         }
@@ -497,7 +530,7 @@ namespace ArangoDBNetStandardTest.GraphApi
 
             Assert.Equal(HttpStatusCode.Accepted, createGraphResponse.ResponseDetails.Code);
 
-            var response = await _client.DeleteEdgeDefinitionAsync(graphName, edgeClx, new DeleteEdgeDefinitionQuery
+            var response = await _client.DeleteEdgeDefinitionAsync(graphName, edgeClx, new DeleteEdgeDefinitionOptions
             {
                 WaitForSync = false,
                 DropCollections = true
@@ -508,7 +541,7 @@ namespace ArangoDBNetStandardTest.GraphApi
 
             var getAfterResponse = await _client.GetEdgeCollectionsAsync(graphName);
 
-            var collectionFound = getAfterResponse.Collections.Where(x => x == edgeClx).FirstOrDefault();
+            var collectionFound = getAfterResponse.FirstOrDefault(x => x == edgeClx);
 
             Assert.Null(collectionFound);
         }
@@ -516,33 +549,62 @@ namespace ArangoDBNetStandardTest.GraphApi
         [Fact]
         public async Task DeleteEdgeDefinitionAsync_ShouldThrow_WhenEdgeDefinitionNameDoesNotExist()
         {
+            _client.ThrowErrorsAsExceptions = true;
             var ex = await Assert.ThrowsAsync<ApiErrorException>(async () =>
             {
-                await _client.DeleteEdgeDefinitionAsync(_fixture.TestGraph, "bogus_edgeclx", new DeleteEdgeDefinitionQuery
+                await _client.DeleteEdgeDefinitionAsync(_fixture.TestGraph, "bogus_edgeclx", new DeleteEdgeDefinitionOptions
                 {
                     WaitForSync = false,
                     DropCollections = true
                 });
             });
 
-            Assert.Equal(HttpStatusCode.NotFound, ex.ApiError.Code);
-            Assert.Equal(1930, ex.ApiError.ErrorNum); // GRAPH_EDGE_COLLECTION_NOT_USED
+            Assert.Equal(HttpStatusCode.NotFound, ex.ResponseDetails.Code);
+            Assert.Equal(1930, ex.ResponseDetails.ErrorNum); // GRAPH_EDGE_COLLECTION_NOT_USED
+        }
+
+        [Fact]
+        public async Task DeleteEdgeDefinitionAsync_ShouldReturnError_WhenEdgeDefinitionNameDoesNotExist()
+        {
+            DeleteEdgeDefinitionResponse deleteEdgeDefinitionResponse = await _client.DeleteEdgeDefinitionAsync(_fixture.TestGraph, "bogus_edgeclx", new DeleteEdgeDefinitionOptions
+            {
+                WaitForSync = false,
+                DropCollections = true
+            });
+
+            Assert.False(deleteEdgeDefinitionResponse.IsSuccess);
+            Assert.Equal(HttpStatusCode.NotFound, deleteEdgeDefinitionResponse.ResponseDetails.Code);
+            Assert.Equal(1930, deleteEdgeDefinitionResponse.ResponseDetails.ErrorNum); // GRAPH_EDGE_COLLECTION_NOT_USED
         }
 
         [Fact]
         public async Task DeleteEdgeDefinitionAsync_ShouldThrow_WhenGraphNameDoesNotExist()
         {
+            _client.ThrowErrorsAsExceptions = true;
             var ex = await Assert.ThrowsAsync<ApiErrorException>(async () =>
             {
-                await _client.DeleteEdgeDefinitionAsync("bogus_graph", _fixture.TestCollection, new DeleteEdgeDefinitionQuery
+                await _client.DeleteEdgeDefinitionAsync("bogus_graph", _fixture.TestCollection, new DeleteEdgeDefinitionOptions
                 {
                     WaitForSync = false,
                     DropCollections = true
                 });
             });
 
-            Assert.Equal(HttpStatusCode.NotFound, ex.ApiError.Code);
-            Assert.Equal(1924, ex.ApiError.ErrorNum); // GRAPH_NOT_FOUND
+            Assert.Equal(HttpStatusCode.NotFound, ex.ResponseDetails.Code);
+            Assert.Equal(1924, ex.ResponseDetails.ErrorNum); // GRAPH_NOT_FOUND
+        }
+
+        [Fact]
+        public async Task DeleteEdgeDefinitionAsync_ShouldReturnError_WhenGraphNameDoesNotExist()
+        {
+            DeleteEdgeDefinitionResponse deleteEdgeDefinitionResponse = await _client.DeleteEdgeDefinitionAsync("bogus_graph", _fixture.TestCollection, new DeleteEdgeDefinitionOptions
+            {
+                WaitForSync = false,
+                DropCollections = true
+            });
+
+            Assert.Equal(HttpStatusCode.NotFound, deleteEdgeDefinitionResponse.ResponseDetails.Code);
+            Assert.Equal(1924, deleteEdgeDefinitionResponse.ResponseDetails.ErrorNum); // GRAPH_NOT_FOUND
         }
 
         [Fact]
@@ -569,32 +631,48 @@ namespace ArangoDBNetStandardTest.GraphApi
                     Collection = clxToDelete
                 });
 
-            var response = await _client.DeleteVertexCollectionAsync(graphName, clxToDelete, new DeleteVertexCollectionQuery
+            var response = await _client.DeleteVertexCollectionAsync(graphName, clxToDelete, new DeleteVertexCollectionOptions
             {
                 DropCollection = false
             });
 
-            Assert.Equal(HttpStatusCode.Accepted, response.Code);
-            Assert.False(response.Error);
+            Assert.Equal(HttpStatusCode.Accepted, response.ResponseDetails.Code);
+            Assert.False(response.ResponseDetails.Error);
             Assert.Empty(response.Graph.OrphanCollections);
         }
 
         [Fact]
         public async Task DeleteVertexCollectionAsync_ShouldThrow_WhenGraphIsNotFound()
         {
+            _client.ThrowErrorsAsExceptions = true;
             string graphName = nameof(DeleteVertexCollectionAsync_ShouldThrow_WhenGraphIsNotFound);
             string clxToDelete = nameof(DeleteVertexCollectionAsync_ShouldThrow_WhenGraphIsNotFound);
 
             var ex = await Assert.ThrowsAsync<ApiErrorException>(async () => await _client.DeleteVertexCollectionAsync(graphName, clxToDelete));
 
-            Assert.True(ex.ApiError.Error);
-            Assert.Equal(HttpStatusCode.NotFound, ex.ApiError.Code);
-            Assert.Equal(1924, ex.ApiError.ErrorNum); // ERROR_GRAPH_NOT_FOUND
+            Assert.True(ex.ResponseDetails.Error);
+            Assert.Equal(HttpStatusCode.NotFound, ex.ResponseDetails.Code);
+            Assert.Equal(1924, ex.ResponseDetails.ErrorNum); // ERROR_GRAPH_NOT_FOUND
+        }
+
+        [Fact]
+        public async Task DeleteVertexCollectionAsync_ShouldReturnError_WhenGraphIsNotFound()
+        {
+            string graphName = nameof(DeleteVertexCollectionAsync_ShouldThrow_WhenGraphIsNotFound);
+            string clxToDelete = nameof(DeleteVertexCollectionAsync_ShouldThrow_WhenGraphIsNotFound);
+
+            DeleteVertexCollectionResponse deleteVertexCollectionResponse = await _client.DeleteVertexCollectionAsync(graphName, clxToDelete);
+            
+            Assert.False(deleteVertexCollectionResponse.IsSuccess);
+            Assert.True(deleteVertexCollectionResponse.ResponseDetails.Error);
+            Assert.Equal(HttpStatusCode.NotFound, deleteVertexCollectionResponse.ResponseDetails.Code);
+            Assert.Equal(1924, deleteVertexCollectionResponse.ResponseDetails.ErrorNum); // ERROR_GRAPH_NOT_FOUND
         }
 
         [Fact]
         public async Task DeleteVertexCollectionAsync_ShouldThrow_WhenVertexIsNotFound()
         {
+            _client.ThrowErrorsAsExceptions = true;
             string graphName = nameof(DeleteVertexCollectionAsync_ShouldThrow_WhenVertexIsNotFound);
 
             await _client.PostGraphAsync(
@@ -607,14 +685,36 @@ namespace ArangoDBNetStandardTest.GraphApi
 
             var ex = await Assert.ThrowsAsync<ApiErrorException>(async () => await _client.DeleteVertexCollectionAsync(graphName, clxToDelete));
 
-            Assert.True(ex.ApiError.Error);
-            Assert.Equal(HttpStatusCode.BadRequest, ex.ApiError.Code);
-            Assert.Equal(1928, ex.ApiError.ErrorNum); // GRAPH_NOT_IN_ORPHAN_COLLECTION
+            Assert.True(ex.ResponseDetails.Error);
+            Assert.Equal(HttpStatusCode.BadRequest, ex.ResponseDetails.Code);
+            Assert.Equal(1928, ex.ResponseDetails.ErrorNum); // GRAPH_NOT_IN_ORPHAN_COLLECTION
+        }
+
+        [Fact]
+        public async Task DeleteVertexCollectionAsync_ShouldReturnError_WhenVertexIsNotFound()
+        {
+            string graphName = nameof(DeleteVertexCollectionAsync_ShouldThrow_WhenVertexIsNotFound);
+
+            await _client.PostGraphAsync(
+                new PostGraphBody
+                {
+                    Name = graphName
+                });
+
+            string clxToDelete = nameof(DeleteVertexCollectionAsync_ShouldThrow_WhenVertexIsNotFound);
+
+            DeleteVertexCollectionResponse deleteVertexCollectionResponse = await _client.DeleteVertexCollectionAsync(graphName, clxToDelete);
+            
+            Assert.False(deleteVertexCollectionResponse.IsSuccess);
+            Assert.True(deleteVertexCollectionResponse.ResponseDetails.Error);
+            Assert.Equal(HttpStatusCode.BadRequest, deleteVertexCollectionResponse.ResponseDetails.Code);
+            Assert.Equal(1928, deleteVertexCollectionResponse.ResponseDetails.ErrorNum); // GRAPH_NOT_IN_ORPHAN_COLLECTION
         }
 
         [Fact]
         public async Task DeleteVertexCollectionAsync_ShouldDropCollection_WhenDropCollectionIsTrue()
         {
+            _client.ThrowErrorsAsExceptions = true;
             // Create a new graph
 
             string graphName = "DeleteVertexCollectionAsync_ShouldThrowNotFound_WhenCollectionDropIsTrue";
@@ -636,15 +736,16 @@ namespace ArangoDBNetStandardTest.GraphApi
                     Collection = clxToDelete
                 });
 
-            await _client.DeleteVertexCollectionAsync(graphName, clxToDelete, new DeleteVertexCollectionQuery
+            await _client.DeleteVertexCollectionAsync(graphName, clxToDelete, new DeleteVertexCollectionOptions
             {
                 DropCollection = true
             });
 
-            var ex = await Assert.ThrowsAsync<ApiErrorException>(async () =>
-                await _fixture.ArangoDBClient.Collection.GetCollectionAsync(clxToDelete));
-            Assert.Equal(HttpStatusCode.NotFound, ex.ApiError.Code);
-            Assert.Equal(1203, ex.ApiError.ErrorNum); // ARANGO_DATA_SOURCE_NOT_FOUND
+            GetCollectionResponse getCollectionResponse = await _fixture.ArangoDBClient.Collection.GetCollectionAsync(clxToDelete);
+            
+            Assert.False(getCollectionResponse.IsSuccess);
+            Assert.Equal(HttpStatusCode.NotFound, getCollectionResponse.ResponseDetails.Code);
+            Assert.Equal(1203, getCollectionResponse.ResponseDetails.ErrorNum); // ARANGO_DATA_SOURCE_NOT_FOUND
         }
 
         [Fact]
@@ -700,8 +801,8 @@ namespace ArangoDBNetStandardTest.GraphApi
                     WaitForSync = true
                 });
 
-            Assert.Equal(HttpStatusCode.Created, response.Code);
-            Assert.False(response.Error);
+            Assert.Equal(HttpStatusCode.Created, response.ResponseDetails.Code);
+            Assert.False(response.ResponseDetails.Error);
             Assert.NotNull(response.Edge);
             Assert.NotNull(response.Edge._id);
             Assert.NotNull(response.Edge._key);
@@ -713,6 +814,8 @@ namespace ArangoDBNetStandardTest.GraphApi
         [Fact]
         public async Task PostEdgeAsync_ShouldThrow_WhenGraphNotFound()
         {
+            //TODO Error handling test
+            _client.ThrowErrorsAsExceptions = true;
             string graphName = nameof(PostEdgeAsync_ShouldThrow_WhenGraphNotFound);
 
             var exception = await Assert.ThrowsAsync<ApiErrorException>(async () =>
@@ -723,8 +826,8 @@ namespace ArangoDBNetStandardTest.GraphApi
                 });
             });
 
-            Assert.Equal(HttpStatusCode.NotFound, exception.ApiError.Code);
-            Assert.Equal(1924, exception.ApiError.ErrorNum); // GRAPH_NOT_FOUND
+            Assert.Equal(HttpStatusCode.NotFound, exception.ResponseDetails.Code);
+            Assert.Equal(1924, exception.ResponseDetails.ErrorNum); // GRAPH_NOT_FOUND
         }
 
         [Fact]
@@ -791,26 +894,43 @@ namespace ArangoDBNetStandardTest.GraphApi
                         WaitForSync = true
                     });
 
-            Assert.Equal(HttpStatusCode.OK, response.Code);
+            Assert.Equal(HttpStatusCode.OK, response.ResponseDetails.Code);
             Assert.Equal(createEdgeResponse.New.myKey, response.Old.myKey);
             Assert.True(response.Removed);
-            Assert.False(response.Error);
+            Assert.False(response.ResponseDetails.Error);
         }
 
         [Fact]
         public async Task DeleteEdgeAsync_ShouldThrow_WhenGraphNotFound()
         {
+            _client.ThrowErrorsAsExceptions = true;
             string graphName = nameof(DeleteEdgeAsync_ShouldThrow_WhenGraphNotFound);
 
-            var exception = await Assert.ThrowsAsync<ApiErrorException>(async () => await _client.DeleteEdgeAsync<object>(graphName, "edgeClx", ""));
+            var exception = await Assert.ThrowsAsync<ApiErrorException>(async () =>
+                await _client.DeleteEdgeAsync<object>(graphName, "edgeClx", ""));
 
-            Assert.Equal(HttpStatusCode.NotFound, exception.ApiError.Code);
-            Assert.Equal(1924, exception.ApiError.ErrorNum); // GRAPH_NOT_FOUND
+            Assert.Equal(HttpStatusCode.NotFound, exception.ResponseDetails.Code);
+            Assert.Equal(1924, exception.ResponseDetails.ErrorNum); // GRAPH_NOT_FOUND
+        }
+
+        [Fact]
+        public async Task DeleteEdgeAsync_ShouldReturnError_WhenGraphNotFound()
+        {
+            string graphName = nameof(DeleteEdgeAsync_ShouldThrow_WhenGraphNotFound);
+
+            DeleteEdgeResponse<object> deleteEdgeResponse = await _client.DeleteEdgeAsync<object>(graphName, "edgeClx", "");
+
+            Assert.False(deleteEdgeResponse.IsSuccess);
+            Assert.True(deleteEdgeResponse.ResponseDetails.Error);
+            Assert.Equal(HttpStatusCode.NotFound, deleteEdgeResponse.ResponseDetails.Code);
+            Assert.Equal(1924, deleteEdgeResponse.ResponseDetails.ErrorNum); // GRAPH_NOT_FOUND
         }
 
         [Fact]
         public async Task GetVertexAsync_ShouldSucceed()
         {
+            //TODO Error handling test
+            _client.ThrowErrorsAsExceptions = true;
             // Create a new graph
 
             string graphName = nameof(GetVertexAsync_ShouldSucceed);
@@ -839,8 +959,8 @@ namespace ArangoDBNetStandardTest.GraphApi
 
             var response = await _client.GetVertexAsync<GetVertexMockModel>(graphName, clxToAdd, createVtxResponse.Vertex._key);
 
-            Assert.Equal(HttpStatusCode.OK, response.Code);
-            Assert.False(response.Error);
+            Assert.Equal(HttpStatusCode.OK, response.ResponseDetails.Code);
+            Assert.False(response.ResponseDetails.Error);
             Assert.NotNull(response.Vertex);
             Assert.Equal(clxToAdd + "_vtx", response.Vertex.Name);
             Assert.Equal(createVtxResponse.Vertex._key, response.Vertex._key);
@@ -850,6 +970,8 @@ namespace ArangoDBNetStandardTest.GraphApi
         [Fact]
         public async Task GetVertexAsync_ShouldThrow_WhenVertexCollectionIsNotFound()
         {
+            //TODO Error handling test
+            _client.ThrowErrorsAsExceptions = true;
             // Create a new graph
             string graphName = nameof(GetVertexAsync_ShouldThrow_WhenVertexCollectionIsNotFound);
 
@@ -862,14 +984,16 @@ namespace ArangoDBNetStandardTest.GraphApi
 
             var ex = await Assert.ThrowsAsync<ApiErrorException>(async () => await _client.GetVertexAsync<GetVertexMockModel>(graphName, vertex, "12345"));
 
-            Assert.True(ex.ApiError.Error);
-            Assert.Equal(HttpStatusCode.NotFound, ex.ApiError.Code);
-            Assert.Equal(1203, ex.ApiError.ErrorNum); // ARANGO_DATA_SOURCE_NOT_FOUND
+            Assert.True(ex.ResponseDetails.Error);
+            Assert.Equal(HttpStatusCode.NotFound, ex.ResponseDetails.Code);
+            Assert.Equal(1203, ex.ResponseDetails.ErrorNum); // ARANGO_DATA_SOURCE_NOT_FOUND
         }
 
         [Fact]
         public async Task GetVertexAsync_ShouldThrow_WhenVertexIsNotFound()
         {
+            //TODO Error handling test
+            _client.ThrowErrorsAsExceptions = true;
             // Create a new graph
             string graphName = nameof(GetVertexAsync_ShouldThrow_WhenVertexIsNotFound);
 
@@ -889,22 +1013,24 @@ namespace ArangoDBNetStandardTest.GraphApi
 
             var ex = await Assert.ThrowsAsync<ApiErrorException>(async () => await _client.GetVertexAsync<GetVertexMockModel>(graphName, vertex, "12456"));
 
-            Assert.True(ex.ApiError.Error);
-            Assert.Equal(HttpStatusCode.NotFound, ex.ApiError.Code);
-            Assert.Equal(1202, ex.ApiError.ErrorNum); // ARANGO_DOCUMENT_NOT_FOUND
+            Assert.True(ex.ResponseDetails.Error);
+            Assert.Equal(HttpStatusCode.NotFound, ex.ResponseDetails.Code);
+            Assert.Equal(1202, ex.ResponseDetails.ErrorNum); // ARANGO_DOCUMENT_NOT_FOUND
         }
 
         [Fact]
         public async Task GetVertexAsync_ShouldThrow_WhenGraphIsNotFound()
         {
+            //TODO Error handling test
+            _client.ThrowErrorsAsExceptions = true;
             string graphName = nameof(GetVertexAsync_ShouldThrow_WhenGraphIsNotFound);
             string vertex = nameof(GetVertexAsync_ShouldThrow_WhenGraphIsNotFound) + "_vtx";
 
             var ex = await Assert.ThrowsAsync<ApiErrorException>(async () => await _client.GetVertexAsync<GetVertexMockModel>(graphName, vertex, "12345"));
 
-            Assert.True(ex.ApiError.Error);
-            Assert.Equal(HttpStatusCode.NotFound, ex.ApiError.Code);
-            Assert.Equal(1924, ex.ApiError.ErrorNum); // ERROR_GRAPH_NOT_FOUND
+            Assert.True(ex.ResponseDetails.Error);
+            Assert.Equal(HttpStatusCode.NotFound, ex.ResponseDetails.Code);
+            Assert.Equal(1924, ex.ResponseDetails.ErrorNum); // ERROR_GRAPH_NOT_FOUND
         }
 
         [Fact]
@@ -938,7 +1064,7 @@ namespace ArangoDBNetStandardTest.GraphApi
                 Name = vertexProperty
             });
 
-            Assert.Equal(HttpStatusCode.Accepted, createVtxResponse.Code);
+            Assert.Equal(HttpStatusCode.Accepted, createVtxResponse.ResponseDetails.Code);
 
             var response = await _client.DeleteVertexAsync<DeleteVertexMockModel>(graphName, clxToAdd, createVtxResponse.Vertex._key, new DeleteVertexQuery
             {
@@ -946,8 +1072,8 @@ namespace ArangoDBNetStandardTest.GraphApi
                 WaitForSync = true
             });
 
-            Assert.Equal(HttpStatusCode.OK, response.Code);
-            Assert.False(response.Error);
+            Assert.Equal(HttpStatusCode.OK, response.ResponseDetails.Code);
+            Assert.False(response.ResponseDetails.Error);
             Assert.True(response.Removed);
             Assert.Equal(vertexProperty, response.Old.Name);
         }
@@ -955,19 +1081,35 @@ namespace ArangoDBNetStandardTest.GraphApi
         [Fact]
         public async Task DeleteVertexAsync_ShouldThrow_WhenGraphIsNotFound()
         {
+            _client.ThrowErrorsAsExceptions = true;
             string graphName = nameof(DeleteVertexAsync_ShouldThrow_WhenGraphIsNotFound);
             string vertex = nameof(DeleteVertexAsync_ShouldThrow_WhenGraphIsNotFound) + "_vtx";
 
             var ex = await Assert.ThrowsAsync<ApiErrorException>(async () => await _client.DeleteVertexAsync<object>(graphName, vertex, "12345"));
 
-            Assert.True(ex.ApiError.Error);
-            Assert.Equal(HttpStatusCode.NotFound, ex.ApiError.Code);
-            Assert.Equal(1924, ex.ApiError.ErrorNum); // ERROR_GRAPH_NOT_FOUND
+            Assert.True(ex.ResponseDetails.Error);
+            Assert.Equal(HttpStatusCode.NotFound, ex.ResponseDetails.Code);
+            Assert.Equal(1924, ex.ResponseDetails.ErrorNum); // ERROR_GRAPH_NOT_FOUND
+        }
+
+        [Fact]
+        public async Task DeleteVertexAsync_ShouldReturnError_WhenGraphIsNotFound()
+        {
+            string graphName = nameof(DeleteVertexAsync_ShouldThrow_WhenGraphIsNotFound);
+            string vertex = nameof(DeleteVertexAsync_ShouldThrow_WhenGraphIsNotFound) + "_vtx";
+
+            DeleteVertexResponse<object> deleteVertexResponse = await _client.DeleteVertexAsync<object>(graphName, vertex, "12345");
+            
+            Assert.False(deleteVertexResponse.IsSuccess);
+            Assert.True(deleteVertexResponse.ResponseDetails.Error);
+            Assert.Equal(HttpStatusCode.NotFound, deleteVertexResponse.ResponseDetails.Code);
+            Assert.Equal(1924, deleteVertexResponse.ResponseDetails.ErrorNum); // ERROR_GRAPH_NOT_FOUND
         }
 
         [Fact]
         public async Task DeleteVertexAsync_ShouldThrow_WhenVertexCollectionIsNotFound()
         {
+            _client.ThrowErrorsAsExceptions = true;
             string graphName = nameof(DeleteVertexAsync_ShouldThrow_WhenVertexCollectionIsNotFound);
 
             await _client.PostGraphAsync(
@@ -980,14 +1122,36 @@ namespace ArangoDBNetStandardTest.GraphApi
 
             var ex = await Assert.ThrowsAsync<ApiErrorException>(async () => await _client.DeleteVertexAsync<object>(graphName, vertex, "12345"));
 
-            Assert.True(ex.ApiError.Error);
-            Assert.Equal(HttpStatusCode.NotFound, ex.ApiError.Code);
-            Assert.Equal(1203, ex.ApiError.ErrorNum); // ARANGO_DATA_SOURCE_NOT_FOUND
+            Assert.True(ex.ResponseDetails.Error);
+            Assert.Equal(HttpStatusCode.NotFound, ex.ResponseDetails.Code);
+            Assert.Equal(1203, ex.ResponseDetails.ErrorNum); // ARANGO_DATA_SOURCE_NOT_FOUND
+        }
+
+        [Fact]
+        public async Task DeleteVertexAsync_ShouldReturnError_WhenVertexCollectionIsNotFound()
+        {
+            string graphName = nameof(DeleteVertexAsync_ShouldThrow_WhenVertexCollectionIsNotFound);
+
+            await _client.PostGraphAsync(
+                new PostGraphBody
+                {
+                    Name = graphName
+                });
+
+            string vertex = nameof(DeleteVertexAsync_ShouldThrow_WhenVertexCollectionIsNotFound) + "_vtx";
+
+            DeleteVertexResponse<object> deleteVertexResponse = await _client.DeleteVertexAsync<object>(graphName, vertex, "12345");
+            
+            Assert.False(deleteVertexResponse.IsSuccess);
+            Assert.True(deleteVertexResponse.ResponseDetails.Error);
+            Assert.Equal(HttpStatusCode.NotFound, deleteVertexResponse.ResponseDetails.Code);
+            Assert.Equal(1203, deleteVertexResponse.ResponseDetails.ErrorNum); // ARANGO_DATA_SOURCE_NOT_FOUND
         }
 
         [Fact]
         public async Task DeleteVertexAsync_ShouldThrow_WhenVertexIsNotFound()
         {
+            _client.ThrowErrorsAsExceptions = true;
             string graphName = nameof(DeleteVertexAsync_ShouldThrow_WhenVertexIsNotFound);
 
             await _client.PostGraphAsync(
@@ -1008,14 +1172,44 @@ namespace ArangoDBNetStandardTest.GraphApi
             var ex = await Assert.ThrowsAsync<ApiErrorException>(async () =>
                 await _client.DeleteVertexAsync<object>(graphName, vertexClx, "12345"));
 
-            Assert.True(ex.ApiError.Error);
-            Assert.Equal(HttpStatusCode.NotFound, ex.ApiError.Code);
-            Assert.Equal(1202, ex.ApiError.ErrorNum); // ARANGO_DOCUMENT_NOT_FOUND
+            Assert.True(ex.ResponseDetails.Error);
+            Assert.Equal(HttpStatusCode.NotFound, ex.ResponseDetails.Code);
+            Assert.Equal(1202, ex.ResponseDetails.ErrorNum); // ARANGO_DOCUMENT_NOT_FOUND
+        }
+
+        [Fact]
+        public async Task DeleteVertexAsync_ShouldReturnError_WhenVertexIsNotFound()
+        {
+            string graphName = nameof(DeleteVertexAsync_ShouldReturnError_WhenVertexIsNotFound);
+
+            await _client.PostGraphAsync(
+                new PostGraphBody
+                {
+                    Name = graphName
+                });
+
+            string vertexClx = nameof(DeleteVertexAsync_ShouldReturnError_WhenVertexIsNotFound) + "_vtxClx";
+
+            await _client.PostVertexCollectionAsync(
+                graphName,
+                new PostVertexCollectionBody
+                {
+                    Collection = vertexClx
+                });
+
+            DeleteVertexResponse<object> deleteVertexResponse = await _client.DeleteVertexAsync<object>(graphName, vertexClx, "12345");
+            
+            Assert.False(deleteVertexResponse.IsSuccess);
+            Assert.True(deleteVertexResponse.ResponseDetails.Error);
+            Assert.Equal(HttpStatusCode.NotFound, deleteVertexResponse.ResponseDetails.Code);
+            Assert.Equal(1202, deleteVertexResponse.ResponseDetails.ErrorNum); // ARANGO_DOCUMENT_NOT_FOUND
         }
 
         [Fact]
         public async Task PatchVertexAsync_ShouldSucceed()
         {
+            //TODO Error handling test
+            _client.ThrowErrorsAsExceptions = true;
             // Create a new graph
 
             string graphName = nameof(PatchVertexAsync_ShouldSucceed);
@@ -1041,7 +1235,7 @@ namespace ArangoDBNetStandardTest.GraphApi
             {
                 Name = clxToAdd + "_vtx",
                 Value = "myValue"
-            }, new PostVertexQuery
+            }, new PostVertexOptions
             {
                 ReturnNew = true,
                 WaitForSync = true
@@ -1057,8 +1251,8 @@ namespace ArangoDBNetStandardTest.GraphApi
                 WaitForSync = true
             });
 
-            Assert.Equal(HttpStatusCode.OK, response.Code);
-            Assert.False(response.Error);
+            Assert.Equal(HttpStatusCode.OK, response.ResponseDetails.Code);
+            Assert.False(response.ResponseDetails.Error);
             Assert.NotNull(response.Vertex);
             Assert.NotEqual(createVtxResponse.Vertex._rev, response.Vertex._rev);
             Assert.NotEqual(createVtxResponse.Vertex._rev, response.New._rev);
@@ -1069,19 +1263,23 @@ namespace ArangoDBNetStandardTest.GraphApi
         [Fact]
         public async Task PatchVertexAsync_ShouldThrow_WhenGraphIsNotFound()
         {
+            //TODO Error handling test
+            _client.ThrowErrorsAsExceptions = true;
             string graphName = nameof(PatchVertexAsync_ShouldThrow_WhenGraphIsNotFound);
             string vertex = nameof(PatchVertexAsync_ShouldThrow_WhenGraphIsNotFound) + "_vtx";
 
             var ex = await Assert.ThrowsAsync<ApiErrorException>(async () => await _client.PatchVertexAsync<dynamic, PatchVertexMockModel>(graphName, vertex, "12345", new { }));
 
-            Assert.True(ex.ApiError.Error);
-            Assert.Equal(HttpStatusCode.NotFound, ex.ApiError.Code);
-            Assert.Equal(1924, ex.ApiError.ErrorNum); // ERROR_GRAPH_NOT_FOUND
+            Assert.True(ex.ResponseDetails.Error);
+            Assert.Equal(HttpStatusCode.NotFound, ex.ResponseDetails.Code);
+            Assert.Equal(1924, ex.ResponseDetails.ErrorNum); // ERROR_GRAPH_NOT_FOUND
         }
 
         [Fact]
         public async Task PatchVertexAsync_ShouldThrow_WhenVertexCollectionIsNotFound()
         {
+            //TODO Error handling test
+            _client.ThrowErrorsAsExceptions = true;
             // Create a new graph
             string graphName = nameof(PatchVertexAsync_ShouldThrow_WhenVertexCollectionIsNotFound);
 
@@ -1094,14 +1292,16 @@ namespace ArangoDBNetStandardTest.GraphApi
 
             var ex = await Assert.ThrowsAsync<ApiErrorException>(async () => await _client.PatchVertexAsync<dynamic, PatchVertexMockModel>(graphName, vertex, "12345", new { }));
 
-            Assert.True(ex.ApiError.Error);
-            Assert.Equal(HttpStatusCode.NotFound, ex.ApiError.Code);
-            Assert.Equal(1203, ex.ApiError.ErrorNum); // ARANGO_DATA_SOURCE_NOT_FOUND
+            Assert.True(ex.ResponseDetails.Error);
+            Assert.Equal(HttpStatusCode.NotFound, ex.ResponseDetails.Code);
+            Assert.Equal(1203, ex.ResponseDetails.ErrorNum); // ARANGO_DATA_SOURCE_NOT_FOUND
         }
 
         [Fact]
         public async Task PatchVertexAsync_ShouldThrow_WhenVertexIsNotFound()
         {
+            //TODO Error handling test
+            _client.ThrowErrorsAsExceptions = true;
             // Create a new graph
             string graphName = nameof(PatchVertexAsync_ShouldThrow_WhenVertexIsNotFound);
 
@@ -1121,9 +1321,9 @@ namespace ArangoDBNetStandardTest.GraphApi
 
             var ex = await Assert.ThrowsAsync<ApiErrorException>(async () => await _client.PatchVertexAsync<dynamic, PatchVertexMockModel>(graphName, vertexClx, "12345", new { }));
 
-            Assert.True(ex.ApiError.Error);
-            Assert.Equal(HttpStatusCode.NotFound, ex.ApiError.Code);
-            Assert.Equal(1202, ex.ApiError.ErrorNum); // ARANGO_DOCUMENT_NOT_FOUND
+            Assert.True(ex.ResponseDetails.Error);
+            Assert.Equal(HttpStatusCode.NotFound, ex.ResponseDetails.Code);
+            Assert.Equal(1202, ex.ResponseDetails.ErrorNum); // ARANGO_DOCUMENT_NOT_FOUND
         }
 
         [Fact]
@@ -1191,16 +1391,18 @@ namespace ArangoDBNetStandardTest.GraphApi
                 WaitForSync = true
             });
 
-            Assert.Equal(HttpStatusCode.OK, response.Code);
+            Assert.Equal(HttpStatusCode.OK, response.ResponseDetails.Code);
             Assert.Equal(createEdgeResponse.New.myKey, response.Old.myKey);
             Assert.NotEqual(createEdgeResponse.New.myKey, response.New.myKey);
-            Assert.False(response.Error);
+            Assert.False(response.ResponseDetails.Error);
             Assert.NotEqual(response.Edge._rev, createEdgeResponse.Edge._rev);
         }
 
         [Fact]
         public async Task PuGraphEdgeAsync_ShouldThrow_WhenGraphNotFound()
         {
+            //TODO Error handling test
+            _client.ThrowErrorsAsExceptions = true;
             string graphName = nameof(PuGraphEdgeAsync_ShouldThrow_WhenGraphNotFound);
 
             var exception = await Assert.ThrowsAsync<ApiErrorException>(async () =>
@@ -1211,8 +1413,8 @@ namespace ArangoDBNetStandardTest.GraphApi
                 });
             });
 
-            Assert.Equal(HttpStatusCode.NotFound, exception.ApiError.Code);
-            Assert.Equal(1924, exception.ApiError.ErrorNum); // GRAPH_NOT_FOUND
+            Assert.Equal(HttpStatusCode.NotFound, exception.ResponseDetails.Code);
+            Assert.Equal(1924, exception.ResponseDetails.ErrorNum); // GRAPH_NOT_FOUND
         }
 
         [Fact]
@@ -1231,8 +1433,8 @@ namespace ArangoDBNetStandardTest.GraphApi
                     From = new[] { "toclx" }
                 });
 
-            Assert.Equal(HttpStatusCode.Accepted, response.Code);
-            Assert.False(response.Error);
+            Assert.Equal(HttpStatusCode.Accepted, response.ResponseDetails.Code);
+            Assert.False(response.ResponseDetails.Error);
 
             var newEdgeDef = response.Graph.EdgeDefinitions.FirstOrDefault();
             string afterFromDefinition = newEdgeDef.From.FirstOrDefault();
@@ -1244,6 +1446,8 @@ namespace ArangoDBNetStandardTest.GraphApi
         [Fact]
         public async Task PutEdgeDefinitionAsync_ShouldThrow_WhenGraphNameDoesNotExist()
         {
+            //TODO Error handling test
+            _client.ThrowErrorsAsExceptions = true;
             var edgeClx = nameof(PutEdgeDefinitionAsync_ShouldThrow_WhenGraphNameDoesNotExist) + "_edgeClx";
             var ex = await Assert.ThrowsAsync<ApiErrorException>(async () =>
             {
@@ -1258,13 +1462,15 @@ namespace ArangoDBNetStandardTest.GraphApi
                 });
             });
 
-            Assert.Equal(HttpStatusCode.NotFound, ex.ApiError.Code);
-            Assert.Equal(1924, ex.ApiError.ErrorNum); // GRAPH_NOT_FOUND
+            Assert.Equal(HttpStatusCode.NotFound, ex.ResponseDetails.Code);
+            Assert.Equal(1924, ex.ResponseDetails.ErrorNum); // GRAPH_NOT_FOUND
         }
 
         [Fact]
         public async Task PutEdgeDefinitionAsync_ShouldThrow_WhenEdgeCollectionNameDoesNotExist()
         {
+            //TODO Error handling test
+            _client.ThrowErrorsAsExceptions = true;
             var ex = await Assert.ThrowsAsync<ApiErrorException>(async () =>
             {
                 await _client.PutEdgeDefinitionAsync(_fixture.TestGraph, "bogus_edgeclx", new PutEdgeDefinitionBody
@@ -1278,8 +1484,8 @@ namespace ArangoDBNetStandardTest.GraphApi
                 });
             });
 
-            Assert.Equal(HttpStatusCode.NotFound, ex.ApiError.Code);
-            Assert.Equal(1930, ex.ApiError.ErrorNum); // GRAPH_EDGE_COLLECTION_NOT_USED
+            Assert.Equal(HttpStatusCode.NotFound, ex.ResponseDetails.Code);
+            Assert.Equal(1930, ex.ResponseDetails.ErrorNum); // GRAPH_EDGE_COLLECTION_NOT_USED
         }
 
         [Fact]
@@ -1358,6 +1564,7 @@ namespace ArangoDBNetStandardTest.GraphApi
         [Fact]
         public async Task GetEdgeAsync_ShouldThrow_WhenEdgeWithRevisionIsNotFound()
         {
+            _client.ThrowErrorsAsExceptions = true;
             string graphName = nameof(GetEdgeAsync_ShouldThrow_WhenEdgeWithRevisionIsNotFound);
             string fromClx = graphName + "_fromclx";
             string toClx = graphName + "_toclx";
@@ -1422,13 +1629,84 @@ namespace ArangoDBNetStandardTest.GraphApi
                 });
             });
 
-            Assert.Equal(HttpStatusCode.PreconditionFailed, exception.ApiError.Code);
-            Assert.Equal(1200, exception.ApiError.ErrorNum); // ERROR_ARANGO_CONFLICT
+            Assert.Equal(HttpStatusCode.PreconditionFailed, exception.ResponseDetails.Code);
+            Assert.Equal(1200, exception.ResponseDetails.ErrorNum); // ERROR_ARANGO_CONFLICT
+        }
+
+        [Fact]
+        public async Task GetEdgeAsync_ShouldReturnError_WhenEdgeWithRevisionIsNotFound()
+        {
+            string graphName = nameof(GetEdgeAsync_ShouldThrow_WhenEdgeWithRevisionIsNotFound);
+            string fromClx = graphName + "_fromclx";
+            string toClx = graphName + "_toclx";
+            string edgeClx = graphName + "_edgeclx";
+
+            // Create a new graph
+
+            await _fixture.ArangoDBClient.Graph.PostGraphAsync(new PostGraphBody
+            {
+                Name = graphName,
+                EdgeDefinitions = new List<EdgeDefinition>
+                {
+                    new EdgeDefinition
+                    {
+                        From = new[] { fromClx },
+                        To = new[] { toClx },
+                        Collection = edgeClx
+                    }
+                }
+            });
+
+            // Create a document in the vertex collections
+
+            PostDocumentResponse<object> fromResponse = await
+                _fixture.ArangoDBClient.Document.PostDocumentAsync<object>(
+                fromClx,
+                new { myKey = "myValue" });
+
+            PostDocumentResponse<object> toResponse = await
+                _fixture.ArangoDBClient.Document.PostDocumentAsync<object>(
+                toClx,
+                new { myKey = "myValue" });
+
+            // Create the edge
+
+            var createdEdgeResponse = await _client.PostEdgeAsync(
+                graphName,
+                edgeClx,
+                new
+                {
+                    _from = fromResponse._id,
+                    _to = toResponse._id,
+                    myKey = "myValue"
+                },
+                new PostEdgeQuery
+                {
+                    ReturnNew = true,
+                    WaitForSync = true
+                });
+
+            // Get the edge with a non-existing revision
+
+            GetEdgeResponse<JObject> getEdgeResponse = await _client.GetEdgeAsync<Newtonsoft.Json.Linq.JObject>(
+                graphName,
+                edgeClx,
+                createdEdgeResponse.Edge._key,
+                new GetEdgeQuery
+                {
+                    Rev = "RevisionThatDoesNotExist"
+                });
+
+            Assert.False(getEdgeResponse.IsSuccess);
+            Assert.Equal(HttpStatusCode.PreconditionFailed, getEdgeResponse.ResponseDetails.Code);
+            Assert.Equal(1200, getEdgeResponse.ResponseDetails.ErrorNum); // ERROR_ARANGO_CONFLICT
         }
 
         [Fact]
         public async Task GetEdgeAsync_ShouldThrow_WhenGraphIsNotFound()
         {
+            //TODO Error handling test
+            _client.ThrowErrorsAsExceptions = true;
             var exception = await Assert.ThrowsAsync<ApiErrorException>(async () =>
             {
                 await _client.GetEdgeAsync<Newtonsoft.Json.Linq.JObject>(
@@ -1437,8 +1715,8 @@ namespace ArangoDBNetStandardTest.GraphApi
                     "0123456789");
             });
 
-            Assert.Equal(HttpStatusCode.NotFound, exception.ApiError.Code);
-            Assert.Equal(1924, exception.ApiError.ErrorNum); // GRAPH_NOT_FOUND
+            Assert.Equal(HttpStatusCode.NotFound, exception.ResponseDetails.Code);
+            Assert.Equal(1924, exception.ResponseDetails.ErrorNum); // GRAPH_NOT_FOUND
         }
 
         [Fact]
@@ -1495,7 +1773,7 @@ namespace ArangoDBNetStandardTest.GraphApi
                     WaitForSync = true
                 });
 
-            var response = await _client.PatchEdgeAsync<PatchEdgeMockModel, object>(
+            var response = await _client.PatchEdgeAsync<object, PatchEdgeMockModel>(
                 graphName,
                 edgeClx,
                 createEdgeResponse.Edge._key,
@@ -1511,10 +1789,10 @@ namespace ArangoDBNetStandardTest.GraphApi
                     WaitForSync = true
                 });
 
-            Assert.Equal(HttpStatusCode.OK, response.Code);
+            Assert.Equal(HttpStatusCode.OK, response.ResponseDetails.Code);
             Assert.Equal(createEdgeResponse.New.myKey, response.Old.myKey);
             Assert.NotEqual(createEdgeResponse.New.myKey, response.New.myKey);
-            Assert.False(response.Error);
+            Assert.False(response.ResponseDetails.Error);
             Assert.NotEqual(createEdgeResponse.Edge._rev, response.Edge._rev);
             Assert.Equal(createEdgeResponse.New.value, response.New.value);
             Assert.Equal(createEdgeResponse.New.value, response.Old.value);
@@ -1523,17 +1801,22 @@ namespace ArangoDBNetStandardTest.GraphApi
         [Fact]
         public async Task PatchEdgeAsync_ShouldThrow_WhenGraphNotFound()
         {
+            //TODO Error handling test
+            _client.ThrowErrorsAsExceptions = true;
             string graphName = nameof(PatchEdgeAsync_ShouldThrow_WhenGraphNotFound);
 
-            var exception = await Assert.ThrowsAsync<ApiErrorException>(async () => await _client.PatchEdgeAsync<PatchEdgeMockModel, object>(graphName, "edgeClx", "", new { }));
+            var exception = await Assert.ThrowsAsync<ApiErrorException>(async () =>
+                await _client.PatchEdgeAsync<object, PatchEdgeMockModel>(graphName, "edgeClx", "", new { }));
 
-            Assert.Equal(HttpStatusCode.NotFound, exception.ApiError.Code);
-            Assert.Equal(1924, exception.ApiError.ErrorNum); // GRAPH_NOT_FOUND
+            Assert.Equal(HttpStatusCode.NotFound, exception.ResponseDetails.Code);
+            Assert.Equal(1924, exception.ResponseDetails.ErrorNum); // GRAPH_NOT_FOUND
         }
 
         [Fact]
         public async Task PutVertexAsync_ShouldSuceed()
         {
+            //TODO Error handling test
+            _client.ThrowErrorsAsExceptions = true;
             string graphName = nameof(PutVertexAsync_ShouldSuceed) + "_graph";
 
             PostGraphResponse createGraphResponse = await _client.PostGraphAsync(
@@ -1570,8 +1853,8 @@ namespace ArangoDBNetStandardTest.GraphApi
                 WaitForSync = true
             });
 
-            Assert.Equal(HttpStatusCode.OK, response.Code);
-            Assert.False(response.Error);
+            Assert.Equal(HttpStatusCode.OK, response.ResponseDetails.Code);
+            Assert.False(response.ResponseDetails.Error);
             Assert.Equal(afterVertexClxVtx, response.New.Name);
             Assert.NotEqual(response.New.Name, response.Old.Name);
             Assert.NotEqual(createVertexResponse.Vertex._rev, response.Vertex._rev);
@@ -1580,6 +1863,8 @@ namespace ArangoDBNetStandardTest.GraphApi
         [Fact]
         public async Task PutVertexAsync_ShouldThrow_WhenGraphIsNotFound()
         {
+            //TODO Error handling test
+            _client.ThrowErrorsAsExceptions = true;
             string vertexClx = nameof(PutVertexAsync_ShouldThrow_WhenGraphIsNotFound);
             var ex = await Assert.ThrowsAsync<ApiErrorException>(async () =>
             {
@@ -1589,14 +1874,16 @@ namespace ArangoDBNetStandardTest.GraphApi
                 });
             });
 
-            Assert.True(ex.ApiError.Error);
-            Assert.Equal(HttpStatusCode.NotFound, ex.ApiError.Code);
-            Assert.Equal(1924, ex.ApiError.ErrorNum); // ERROR_GRAPH_NOT_FOUND
+            Assert.True(ex.ResponseDetails.Error);
+            Assert.Equal(HttpStatusCode.NotFound, ex.ResponseDetails.Code);
+            Assert.Equal(1924, ex.ResponseDetails.ErrorNum); // ERROR_GRAPH_NOT_FOUND
         }
 
         [Fact]
         public async Task PutVertexAsync_ShouldThrow_WhenVertexCollectionIsNotFound()
         {
+            //TODO Error handling test
+            _client.ThrowErrorsAsExceptions = true;
             string graphName = nameof(PutVertexAsync_ShouldThrow_WhenVertexCollectionIsNotFound);
             string vertexClx = nameof(PutVertexAsync_ShouldThrow_WhenVertexCollectionIsNotFound);
 
@@ -1609,14 +1896,16 @@ namespace ArangoDBNetStandardTest.GraphApi
                     Name = "Bogus_Name"
                 });
             });
-            Assert.True(ex.ApiError.Error);
-            Assert.Equal(HttpStatusCode.NotFound, ex.ApiError.Code);
-            Assert.Equal(1203, ex.ApiError.ErrorNum); // ARANGO_DATA_SOURCE_NOT_FOUND
+            Assert.True(ex.ResponseDetails.Error);
+            Assert.Equal(HttpStatusCode.NotFound, ex.ResponseDetails.Code);
+            Assert.Equal(1203, ex.ResponseDetails.ErrorNum); // ARANGO_DATA_SOURCE_NOT_FOUND
         }
 
         [Fact]
         public async Task PutVertexAsync_ShouldThrow_WhenVertexIsNotFound()
         {
+            //TODO Error handling test
+            _client.ThrowErrorsAsExceptions = true;
             string graphName = nameof(PutVertexAsync_ShouldThrow_WhenGraphIsNotFound);
             string vertexClx = nameof(PutVertexAsync_ShouldThrow_WhenGraphIsNotFound);
 
@@ -1635,9 +1924,9 @@ namespace ArangoDBNetStandardTest.GraphApi
                 });
             });
 
-            Assert.True(ex.ApiError.Error);
-            Assert.Equal(HttpStatusCode.NotFound, ex.ApiError.Code);
-            Assert.Equal(1202, ex.ApiError.ErrorNum); // ARANGO_DOCUMENT_NOT_FOUND
+            Assert.True(ex.ResponseDetails.Error);
+            Assert.Equal(HttpStatusCode.NotFound, ex.ResponseDetails.Code);
+            Assert.Equal(1202, ex.ResponseDetails.ErrorNum); // ARANGO_DOCUMENT_NOT_FOUND
         }
     }
 }

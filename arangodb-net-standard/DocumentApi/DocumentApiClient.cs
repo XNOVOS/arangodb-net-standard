@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using ArangoDBNetStandard.Models;
 
 namespace ArangoDBNetStandard.DocumentApi
 {
@@ -48,10 +49,17 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <param name="query"></param>
         /// <returns></returns>
         public async Task<PostDocumentResponse<T>> PostDocumentAsync<T>(string collectionName, T document,
-            PostDocumentsQuery query = null, CancellationToken cancellationToken = default)
+            PostDocumentsOptions query = null, CancellationToken cancellationToken = default)
         {
+            if (query != null && query.ContentSerializationOptions == null)
+            {
+                query.ContentSerializationOptions = new ContentSerializationOptions(false, true);
+            }
+
             return await PostRequestAsync($"{ApiRootPath}/{WebUtility.UrlEncode(collectionName)}",
-                response => new PostDocumentResponse<T>(response), document, query, cancellationToken);
+                response => new PostDocumentResponse<T>(response), document,
+                query ?? new PostDocumentsOptions
+                    {ContentSerializationOptions = new ContentSerializationOptions(false, true)}, cancellationToken);
         }
 
         /// <summary>
@@ -64,7 +72,7 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <param name="query"></param>
         /// <returns></returns>
         public async Task<PostDocumentsResponse<T>> PostDocumentsAsync<T>(string collectionName,
-            IEnumerable<T> documents, PostDocumentsQuery query = null, CancellationToken cancellationToken = default)
+            IEnumerable<T> documents, PostDocumentsOptions query = null, CancellationToken cancellationToken = default)
         {
             return await PostRequestAsync($"{ApiRootPath}/{WebUtility.UrlEncode(collectionName)}",
                 response => new PostDocumentsResponse<T>(response), documents, query, cancellationToken);
@@ -79,7 +87,7 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <param name="query"></param>
         /// <returns></returns>
         public async Task<PostDocumentsResponse<T>> PutDocumentsAsync<T>(string collectionName,
-            IEnumerable<T> documents, PutDocumentsQuery query = null, CancellationToken cancellationToken = default)
+            IEnumerable<T> documents, PutDocumentsOptions query = null, CancellationToken cancellationToken = default)
         {
             return await PutRequestAsync($"{ApiRootPath}/{WebUtility.UrlEncode(collectionName)}",
                 response => new PostDocumentsResponse<T>(response), documents, query, cancellationToken);
@@ -96,7 +104,7 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <param name="doc"></param>
         /// <param name="opts"></param>
         /// <returns></returns>
-        public async Task<PostDocumentResponse<T>> PutDocumentAsync<T>(string documentId, T document, PutDocumentsQuery query = null, CancellationToken cancellationToken = default)
+        public async Task<PostDocumentResponse<T>> PutDocumentAsync<T>(string documentId, T document, PutDocumentsOptions query = null, CancellationToken cancellationToken = default)
         {
             ValidateDocumentId(documentId);
             return await PutRequestAsync($"{ApiRootPath}/{documentId}",
@@ -136,7 +144,7 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <remarks>
         /// This method overload is provided as a convenience when the client does not care about the type of <see cref="DeleteDocumentResponse{T}.Old"/>
         /// in the returned <see cref="DeleteDocumentResponse{object}"/>. Its value will be <see cref="null"/> when 
-        /// <see cref="DeleteDocumentsQuery.ReturnOld"/> is either <see cref="false"/> or not set, so this overload is useful in the default case 
+        /// <see cref="DeleteDocumentsOptions.ReturnOld"/> is either <see cref="false"/> or not set, so this overload is useful in the default case 
         /// when deleting documents.
         /// </remarks>
         /// <param name="collectionName"></param>
@@ -144,7 +152,7 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <param name="query"></param>
         /// <returns></returns>
         public async Task<DeleteDocumentResponse<object>> DeleteDocumentAsync(string collectionName, string documentKey,
-            DeleteDocumentsQuery query = null, CancellationToken cancellationToken = default)
+            DeleteDocumentsOptions query = null, CancellationToken cancellationToken = default)
         {
             return await DeleteDocumentAsync<object>(
                 $"{WebUtility.UrlEncode(collectionName)}/{WebUtility.UrlEncode(documentKey)}", query, cancellationToken);
@@ -156,14 +164,14 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <remarks>
         /// This method overload is provided as a convenience when the client does not care about the type of <see cref="DeleteDocumentResponse{T}.Old"/>
         /// in the returned <see cref="DeleteDocumentResponse{object}"/>. Its value will be <see cref="null"/> when 
-        /// <see cref="DeleteDocumentsQuery.ReturnOld"/> is either <see cref="false"/> or not set, so this overload is useful in the default case 
+        /// <see cref="DeleteDocumentsOptions.ReturnOld"/> is either <see cref="false"/> or not set, so this overload is useful in the default case 
         /// when deleting documents.
         /// </remarks>
         /// <param name="documentId"></param>
         /// <param name="query"></param>
         /// <returns></returns>
         public async Task<DeleteDocumentResponse<object>> DeleteDocumentAsync(string documentId,
-            DeleteDocumentsQuery query = null, CancellationToken cancellationToken = default)
+            DeleteDocumentsOptions query = null, CancellationToken cancellationToken = default)
         {
             return await DeleteDocumentAsync<object>(documentId, query, cancellationToken);
         }
@@ -175,7 +183,7 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <remarks>
         /// This method overload is provided as a convenience when the client does not care about the type of <see cref="DeleteDocumentResponse{T}.Old"/>
         /// in the returned <see cref="DeleteDocumentsResponse{object}"/>. These will be <see cref="null"/> when 
-        /// <see cref="DeleteDocumentsQuery.ReturnOld"/> is either <see cref="false"/> or not set, so this overload is useful in the default case 
+        /// <see cref="DeleteDocumentsOptions.ReturnOld"/> is either <see cref="false"/> or not set, so this overload is useful in the default case 
         /// when deleting documents.
         /// </remarks>
         /// <param name="collectionName"></param>
@@ -183,7 +191,7 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <param name="query"></param>
         /// <returns></returns>
         public async Task<DeleteDocumentsResponse<object>> DeleteDocumentsAsync(string collectionName,
-            IEnumerable<string> selectors, DeleteDocumentsQuery query = null, CancellationToken cancellationToken = default)
+            IEnumerable<string> selectors, DeleteDocumentsOptions query = null, CancellationToken cancellationToken = default)
         {
             return await DeleteDocumentsAsync<object>(collectionName, selectors, query, cancellationToken);
         }
@@ -196,7 +204,7 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <param name="documentKey"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        public async Task<DeleteDocumentResponse<T>> DeleteDocumentAsync<T>(string collectionName, string documentKey, DeleteDocumentsQuery query = null, CancellationToken cancellationToken = default)
+        public async Task<DeleteDocumentResponse<T>> DeleteDocumentAsync<T>(string collectionName, string documentKey, DeleteDocumentsOptions query = null, CancellationToken cancellationToken = default)
         {
             return await DeleteDocumentAsync<T>(
                 $"{WebUtility.UrlEncode(collectionName)}/{WebUtility.UrlEncode(documentKey)}", query,
@@ -210,7 +218,7 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <param name="query"></param>
         /// <returns></returns>
         public async Task<DeleteDocumentResponse<T>> DeleteDocumentAsync<T>(string documentId,
-            DeleteDocumentsQuery query = null, CancellationToken cancellationToken = default)
+            DeleteDocumentsOptions query = null, CancellationToken cancellationToken = default)
         {
             ValidateDocumentId(documentId);
             return await DeleteRequestAsync($"{ApiRootPath}/{documentId}",
@@ -227,7 +235,7 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <param name="query"></param>
         /// <returns></returns>
         public async Task<DeleteDocumentsResponse<T>> DeleteDocumentsAsync<T>(string collectionName,
-            IEnumerable<string> selectors, DeleteDocumentsQuery query = null, CancellationToken cancellationToken = default)
+            IEnumerable<string> selectors, DeleteDocumentsOptions query = null, CancellationToken cancellationToken = default)
         {
             return await DeleteRequestAsync($"{ApiRootPath}/{WebUtility.UrlEncode(collectionName)}",
                 response => new DeleteDocumentsResponse<T>(response), query, selectors, cancellationToken);
@@ -251,7 +259,7 @@ namespace ArangoDBNetStandard.DocumentApi
         /// </summary>
         /// <typeparam name="T">Type of the patch object used to partially update documents.</typeparam>
         /// <typeparam name="TResponse">Type of the returned documents, only applies when
-        /// <see cref="PatchDocumentsQuery.ReturnNew"/> or <see cref="PatchDocumentsQuery.ReturnOld"/>
+        /// <see cref="PatchDocumentsOptions.ReturnNew"/> or <see cref="PatchDocumentsOptions.ReturnOld"/>
         /// are used.</typeparam>
         /// <param name="collectionName"></param>
         /// <param name="patches"></param>
@@ -261,7 +269,7 @@ namespace ArangoDBNetStandard.DocumentApi
         public async Task<PatchDocumentsResponse<TResponse>> PatchDocumentsAsync<TPatch, TResponse>(
             string collectionName,
             IEnumerable<TPatch> patches,
-            PatchDocumentsQuery query = null,
+            PatchDocumentsOptions query = null,
             CancellationToken cancellationToken = default)
         {
             return await PatchRequestAsync(ApiRootPath + "/" + WebUtility.UrlEncode(collectionName),
@@ -279,7 +287,7 @@ namespace ArangoDBNetStandard.DocumentApi
         /// </summary>
         /// <typeparam name="T">Type of the patch object used to partially update a document.</typeparam>
         /// <typeparam name="TResponse">Type of the returned document, only applies when
-        /// <see cref="PatchDocumentQuery.ReturnNew"/> or <see cref="PatchDocumentQuery.ReturnOld"/>
+        /// <see cref="PatchDocumentOptions.ReturnNew"/> or <see cref="PatchDocumentOptions.ReturnOld"/>
         /// are used.</typeparam>
         /// <param name="collectionName"></param>
         /// <param name="documentKey"></param>
@@ -290,7 +298,7 @@ namespace ArangoDBNetStandard.DocumentApi
             string collectionName,
             string documentKey,
             TPatch body,
-            PatchDocumentQuery query = null,
+            PatchDocumentOptions query = null,
             CancellationToken cancellationToken = default)
         {
             string documentHandle = WebUtility.UrlEncode(collectionName) +
@@ -310,7 +318,7 @@ namespace ArangoDBNetStandard.DocumentApi
         /// </summary>
         /// <typeparam name="TPatch">Type of the patch object used to partially update a document.</typeparam>
         /// <typeparam name="TResponse">Type of the returned document, only applies when
-        /// <see cref="PatchDocumentQuery.ReturnNew"/> or <see cref="PatchDocumentQuery.ReturnOld"/>
+        /// <see cref="PatchDocumentOptions.ReturnNew"/> or <see cref="PatchDocumentOptions.ReturnOld"/>
         /// are used.</typeparam>
         /// <param name="documentId"></param>
         /// <param name="body"></param>
@@ -319,7 +327,7 @@ namespace ArangoDBNetStandard.DocumentApi
         public async Task<PatchDocumentResponse<TResponse>> PatchDocumentAsync<TPatch, TResponse>(
             string documentId,
             TPatch body,
-            PatchDocumentQuery query = null,
+            PatchDocumentOptions query = null,
             CancellationToken cancellationToken = default)
         {
             ValidateDocumentId(documentId);

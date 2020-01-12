@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
+using ArangoDBNetStandard.Models;
 
 namespace ArangoDBNetStandard.CollectionApi.Models
 {
-    public class PostCollectionQuery : RequestOptionsBase
+    public class PostCollectionOptions : RequestOptionsBase
     {
         /// <summary>
         /// Default is true which means the server will only report success back to the
@@ -19,13 +20,5 @@ namespace ArangoDBNetStandard.CollectionApi.Models
         /// this extra check.
         /// </summary>
         public bool? EnforceReplicationFactor { get; set; }
-
-        protected override void PrepareQueryStringValues(IDictionary<string, string> values)
-        {
-            if (WaitForSyncReplication.HasValue)
-                values.Add(nameof(WaitForSyncReplication).ToCamelCase(), (WaitForSyncReplication.Value ? 1 : 0).ToString());
-            if (EnforceReplicationFactor.HasValue)
-                values.Add(nameof(EnforceReplicationFactor).ToCamelCase(), (EnforceReplicationFactor.Value ? 1 : 0).ToString());
-        }
     }
 }

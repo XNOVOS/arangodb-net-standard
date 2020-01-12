@@ -66,28 +66,17 @@ namespace ArangoDBNetStandard.GraphApi
         /// <summary>
         /// Deletes an existing graph object by name.
         /// Optionally all collections not used by other
-        /// graphs can be deleted as well, using <see cref = "DeleteGraphQuery" ></ see >.
+        /// graphs can be deleted as well, using <see cref = "DeleteGraphOptions" ></ see >.
         /// DELETE /_api/gharial/{graph-name}
         /// </summary>
         /// <param name="graphName"></param>
         /// <param name="body"></param>
         /// <returns></returns>
-        public async Task<DeleteGraphResponse> DeleteGraphAsync(string graphName, DeleteGraphQuery query = null)
+        public async Task<DeleteGraphResponse> DeleteGraphAsync(string graphName, DeleteGraphOptions query = null,
+            CancellationToken cancellationToken = default)
         {
-            string uriString = ApiRootPath + "/" + WebUtility.UrlEncode(graphName);
-            if (query != null)
-            {
-                uriString += "?" + query.ToQueryString();
-            }
-            using (var response = await Transport.DeleteAsync(uriString))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    return DeserializeJsonFromStream<DeleteGraphResponse>(stream);
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await DeleteRequestAsync($"{ApiRootPath}/{WebUtility.UrlEncode(graphName)}",
+                response => new DeleteGraphResponse(response), query, cancellationToken);
         }
 
         /// <summary>
@@ -97,17 +86,10 @@ namespace ArangoDBNetStandard.GraphApi
         /// </summary>
         /// <param name="graphName"></param>
         /// <returns></returns>
-        public async Task<GetGraphResponse> GetGraphAsync(string graphName)
+        public async Task<GetGraphResponse> GetGraphAsync(string graphName, CancellationToken cancellationToken = default)
         {
-            using (var response = await Transport.GetAsync(ApiRootPath + "/" + WebUtility.UrlEncode(graphName)))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    return DeserializeJsonFromStream<GetGraphResponse>(stream);
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await GetRequestAsync($"{ApiRootPath}/{WebUtility.UrlEncode(graphName)}",
+                response => new GetGraphResponse(response), null, cancellationToken);
         }
 
         /// <summary>
@@ -116,17 +98,10 @@ namespace ArangoDBNetStandard.GraphApi
         /// </summary>
         /// <param name="graph">The name of the graph.</param>
         /// <returns></returns>
-        public async Task<GetVertexCollectionsResponse> GetVertexCollectionsAsync(string graphName)
+        public async Task<GetVertexCollectionsResponse> GetVertexCollectionsAsync(string graphName, CancellationToken cancellationToken = default)
         {
-            using (var response = await Transport.GetAsync(ApiRootPath + '/' + WebUtility.UrlEncode(graphName) + "/vertex"))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    return DeserializeJsonFromStream<GetVertexCollectionsResponse>(stream);
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await GetRequestAsync($"{ApiRootPath}{'/'}{WebUtility.UrlEncode(graphName)}/vertex",
+                response => new GetVertexCollectionsResponse(response), null, cancellationToken);
         }
 
         /// <summary>
@@ -135,17 +110,10 @@ namespace ArangoDBNetStandard.GraphApi
         /// </summary>
         /// <param name="graphName"></param>
         /// <returns></returns>
-        public async Task<GetEdgeCollectionsResponse> GetEdgeCollectionsAsync(string graphName)
+        public async Task<GetEdgeCollectionsResponse> GetEdgeCollectionsAsync(string graphName, CancellationToken cancellationToken = default)
         {
-            using (var response = await Transport.GetAsync(ApiRootPath + "/" + WebUtility.UrlEncode(graphName) + "/edge"))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    return DeserializeJsonFromStream<GetEdgeCollectionsResponse>(stream);
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await GetRequestAsync($"{ApiRootPath}{'/'}{WebUtility.UrlEncode(graphName)}/edge",
+                response => new GetEdgeCollectionsResponse(response), null, cancellationToken);
         }
 
         /// <summary>
@@ -163,21 +131,11 @@ namespace ArangoDBNetStandard.GraphApi
         /// <returns></returns>
         public async Task<PostEdgeDefinitionResponse> PostEdgeDefinitionAsync(
             string graphName,
-            PostEdgeDefinitionBody body)
+            PostEdgeDefinitionBody body,
+            CancellationToken cancellationToken = default)
         {
-            var content = GetContent(body, true, true);
-
-            string uri = ApiRootPath + "/" + WebUtility.UrlEncode(graphName) + "/edge";
-
-            using (var response = await Transport.PostAsync(uri, content))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    return DeserializeJsonFromStream<PostEdgeDefinitionResponse>(stream);
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await PostRequestAsync($"{ApiRootPath}/{WebUtility.UrlEncode(graphName)}/edge",
+                response => new PostEdgeDefinitionResponse(response), body, null, cancellationToken);
         }
 
         /// <summary>
@@ -190,21 +148,11 @@ namespace ArangoDBNetStandard.GraphApi
         /// <returns></returns>
         public async Task<PostVertexCollectionResponse> PostVertexCollectionAsync(
             string graphName,
-            PostVertexCollectionBody body)
+            PostVertexCollectionBody body,
+            CancellationToken cancellationToken = default)
         {
-            string uri = ApiRootPath + '/' + WebUtility.UrlEncode(graphName) + "/vertex";
-
-            var content = GetContent(body, true, true);
-
-            using (var response = await Transport.PostAsync(uri, content))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    return DeserializeJsonFromStream<PostVertexCollectionResponse>(stream);
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await PostRequestAsync($"{ApiRootPath}{'/'}{WebUtility.UrlEncode(graphName)}/vertex",
+                response => new PostVertexCollectionResponse(response), body, null, cancellationToken);
         }
 
         /// <summary>
@@ -221,24 +169,12 @@ namespace ArangoDBNetStandard.GraphApi
             string graphName,
             string collectionName,
             T vertex,
-            PostVertexQuery query = null)
+            PostVertexOptions query = null,
+            CancellationToken cancellationToken = default)
         {
-            string uri = ApiRootPath + '/' + WebUtility.UrlEncode(graphName) +
-                "/vertex/" + WebUtility.UrlEncode(collectionName);
-            if (query != null)
-            {
-                uri += "?" + query.ToQueryString();
-            }
-            var content = GetContent(vertex, false, false);
-            using (var response = await Transport.PostAsync(uri, content))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    return DeserializeJsonFromStream<PostVertexResponse<T>>(stream);
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await PostRequestAsync(
+                $"{ApiRootPath}{'/'}{WebUtility.UrlEncode(graphName)}/vertex/{WebUtility.UrlEncode(collectionName)}",
+                response => new PostVertexResponse<T>(response), vertex, query, cancellationToken);
         }
 
         /// <summary>
@@ -254,7 +190,7 @@ namespace ArangoDBNetStandard.GraphApi
         public async Task<DeleteEdgeDefinitionResponse> DeleteEdgeDefinitionAsync(
             string graphName,
             string collectionName,
-            DeleteEdgeDefinitionQuery query = null,
+            DeleteEdgeDefinitionOptions query = null,
             CancellationToken cancellationToken = default)
         {
             return await DeleteRequestAsync(
@@ -276,23 +212,12 @@ namespace ArangoDBNetStandard.GraphApi
         public async Task<DeleteVertexCollectionResponse> DeleteVertexCollectionAsync(
             string graphName,
             string collectionName,
-            DeleteVertexCollectionQuery query = null)
+            DeleteVertexCollectionOptions query = null,
+            CancellationToken cancellationToken = default)
         {
-            string uri = ApiRootPath + "/" + WebUtility.UrlEncode(graphName) +
-                "/vertex/" + WebUtility.UrlEncode(collectionName);
-            if (query != null)
-            {
-                uri += "?" + query.ToQueryString();
-            }
-            using (var response = await Transport.DeleteAsync(uri))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    return DeserializeJsonFromStream<DeleteVertexCollectionResponse>(stream);
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await DeleteRequestAsync(
+                $"{ApiRootPath}/{WebUtility.UrlEncode(graphName)}/vertex/{WebUtility.UrlEncode(collectionName)}",
+                response => new DeleteVertexCollectionResponse(response), query, cancellationToken);
         }
 
         /// <summary>
@@ -313,27 +238,12 @@ namespace ArangoDBNetStandard.GraphApi
             string graphName,
             string collectionName,
             T edge,
-            PostEdgeQuery query = null)
+            PostEdgeQuery query = null, 
+            CancellationToken cancellationToken = default)
         {
-            var content = GetContent(edge, false, false);
-
-            string uri = ApiRootPath + "/" + WebUtility.UrlEncode(graphName) +
-                "/edge/" + WebUtility.UrlEncode(collectionName);
-
-            if (query != null)
-            {
-                uri += "?" + query.ToQueryString();
-            }
-
-            using (var response = await Transport.PostAsync(uri, content))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    return DeserializeJsonFromStream<PostEdgeResponse<T>>(stream);
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await PostRequestAsync(
+                $"{ApiRootPath}/{WebUtility.UrlEncode(graphName)}/edge/{WebUtility.UrlEncode(collectionName)}",
+                response => new PostEdgeResponse<T>(response), edge, query, cancellationToken);
         }
 
         /// <summary>
@@ -349,12 +259,13 @@ namespace ArangoDBNetStandard.GraphApi
             string graphName,
             string collectionName,
             string edgeKey,
-            GetEdgeQuery query = null)
+            GetEdgeQuery query = null, 
+            CancellationToken cancellationToken = default)
         {
             return GetEdgeAsync<T>(
                 graphName,
                 WebUtility.UrlEncode(collectionName) + '/' + WebUtility.UrlEncode(edgeKey),
-                query);
+                query, cancellationToken);
         }
 
         /// <summary>
@@ -369,25 +280,11 @@ namespace ArangoDBNetStandard.GraphApi
         public async Task<GetEdgeResponse<T>> GetEdgeAsync<T>(
             string graphName,
             string edgeHandle,
-            GetEdgeQuery query = null)
+            GetEdgeQuery query = null,
+            CancellationToken cancellationToken = default)
         {
-            string uri = ApiRootPath + "/" + WebUtility.UrlEncode(graphName) +
-                "/edge/" + edgeHandle;
-
-            if (query != null)
-            {
-                uri += "?" + query.ToQueryString();
-            }
-
-            using (var response = await Transport.GetAsync(uri))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    return DeserializeJsonFromStream<GetEdgeResponse<T>>(stream);
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await GetRequestAsync($"{ApiRootPath}/{WebUtility.UrlEncode(graphName)}/edge/{edgeHandle}",
+                response => new GetEdgeResponse<T>(response), query, cancellationToken);
         }
 
         /// <summary>
@@ -405,23 +302,12 @@ namespace ArangoDBNetStandard.GraphApi
             string graphName,
             string collectionName,
             string edgeKey,
-            DeleteEdgeQuery query = null)
+            DeleteEdgeQuery query = null,
+            CancellationToken cancellationToken = default)
         {
-            string uri = ApiRootPath + "/" + WebUtility.UrlEncode(graphName) +
-                "/edge/" + WebUtility.UrlEncode(collectionName) + "/" + WebUtility.UrlEncode(edgeKey);
-            if (query != null)
-            {
-                uri += "?" + query.ToQueryString();
-            }
-            using (var response = await Transport.DeleteAsync(uri))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    return DeserializeJsonFromStream<DeleteEdgeResponse<T>>(stream);
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await DeleteRequestAsync(
+                $"{ApiRootPath}/{WebUtility.UrlEncode(graphName)}/edge/{WebUtility.UrlEncode(collectionName)}/{WebUtility.UrlEncode(edgeKey)}",
+                response => new DeleteEdgeResponse<T>(response), query, cancellationToken);
         }
 
         /// Gets a vertex from the given collection.
@@ -436,23 +322,12 @@ namespace ArangoDBNetStandard.GraphApi
             string graphName,
             string collectionName,
             string vertexKey,
-            GetVertexQuery query = null)
+            GetVertexQuery query = null,
+            CancellationToken cancellationToken = default)
         {
-            string uri = ApiRootPath + '/' + WebUtility.UrlEncode(graphName) +
-                "/vertex/" + WebUtility.UrlEncode(collectionName) + "/" + vertexKey;
-            if (query != null)
-            {
-                uri += "?" + query.ToQueryString();
-            }
-            using (var response = await Transport.GetAsync(uri))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    return DeserializeJsonFromStream<GetVertexResponse<T>>(stream);
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await GetRequestAsync(ApiRootPath + '/' + WebUtility.UrlEncode(graphName) +
+                                         "/vertex/" + WebUtility.UrlEncode(collectionName) + "/" + vertexKey,
+                response => new GetVertexResponse<T>(response), query, cancellationToken);
         }
 
         /// <summary>
@@ -468,24 +343,12 @@ namespace ArangoDBNetStandard.GraphApi
             string graphName,
             string collectionName,
             string vertexKey,
-            DeleteVertexQuery query = null)
+            DeleteVertexQuery query = null,
+            CancellationToken cancellationToken = default)
         {
-            string uri = ApiRootPath + '/' + WebUtility.UrlEncode(graphName) +
-                "/vertex/" + WebUtility.UrlEncode(collectionName) + "/" +
-                WebUtility.UrlEncode(vertexKey);
-            if (query != null)
-            {
-                uri += "?" + query.ToQueryString();
-            }
-            using (var response = await Transport.DeleteAsync(uri))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    return DeserializeJsonFromStream<DeleteVertexResponse<T>>(stream);
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await DeleteRequestAsync(
+                $"{ApiRootPath}{'/'}{WebUtility.UrlEncode(graphName)}/vertex/{WebUtility.UrlEncode(collectionName)}/{WebUtility.UrlEncode(vertexKey)}",
+                response => new DeleteVertexResponse<T>(response), query, cancellationToken);
         }
 
         /// <summary>
@@ -507,24 +370,13 @@ namespace ArangoDBNetStandard.GraphApi
             string collectionName,
             string vertexKey,
             TPatch body,
-            PatchVertexQuery query = null)
+            PatchVertexQuery query = null,
+            CancellationToken cancellationToken = default)
         {
-            string uri = ApiRootPath + '/' + WebUtility.UrlEncode(graphName) +
-                "/vertex/" + WebUtility.UrlEncode(collectionName) + "/" + WebUtility.UrlEncode(vertexKey);
-            if (query != null)
-            {
-                uri += "?" + query.ToQueryString();
-            }
-            var content = GetContent(body, false, false);
-            using (var response = await Transport.PatchAsync(uri, content))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    return DeserializeJsonFromStream<PatchVertexResponse<TReturned>>(stream);
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await PatchRequestAsync(ApiRootPath + '/' + WebUtility.UrlEncode(graphName) +
+                                           "/vertex/" + WebUtility.UrlEncode(collectionName) + "/" +
+                                           WebUtility.UrlEncode(vertexKey),
+                response => new PatchVertexResponse<TReturned>(response), body, query, cancellationToken);
         }
 
         /// <summary>
@@ -543,26 +395,12 @@ namespace ArangoDBNetStandard.GraphApi
             string collectionName,
             string edgeKey,
             T edge,
-            PutEdgeQuery query = null)
+            PutEdgeQuery query = null,
+            CancellationToken cancellationToken = default)
         {
-            var content = GetContent(edge, false, false);
-
-            string uri = ApiRootPath + "/" + WebUtility.UrlEncode(graphName) +
-                "/edge/" + WebUtility.UrlEncode(collectionName) + "/" + WebUtility.UrlEncode(edgeKey);
-
-            if (query != null)
-            {
-                uri += "?" + query.ToQueryString();
-            }
-            using (var response = await Transport.PutAsync(uri, content))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    return DeserializeJsonFromStream<PutEdgeResponse<T>>(stream);
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await PutRequestAsync(
+                $"{ApiRootPath}/{WebUtility.UrlEncode(graphName)}/edge/{WebUtility.UrlEncode(collectionName)}/{WebUtility.UrlEncode(edgeKey)}",
+                response => new PutEdgeResponse<T>(response), edge, query, cancellationToken);
         }
 
         /// <summary>
@@ -579,26 +417,13 @@ namespace ArangoDBNetStandard.GraphApi
             string graphName,
             string collectionName,
             PutEdgeDefinitionBody body,
-            PutEdgeDefinitionQuery query = null)
+            PutEdgeDefinitionQuery query = null,
+            CancellationToken cancellationToken = default)
         {
-            string uriString = ApiRootPath + "/" +
-                WebUtility.UrlEncode(graphName) + "/edge/" +
-                WebUtility.UrlEncode(collectionName);
-
-            if (query != null)
-            {
-                uriString += "?" + query.ToQueryString();
-            }
-            var content = GetContent(body, true, true);
-            using (var response = await Transport.PutAsync(uriString, content))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    return DeserializeJsonFromStream<PutEdgeDefinitionResponse>(stream);
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await PutRequestAsync(ApiRootPath + "/" +
+                                         WebUtility.UrlEncode(graphName) + "/edge/" +
+                                         WebUtility.UrlEncode(collectionName),
+                response => new PutEdgeDefinitionResponse(response), body, query, cancellationToken);
         }
 
         /// <summary>
@@ -613,32 +438,17 @@ namespace ArangoDBNetStandard.GraphApi
         /// <param name="edge"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        public async Task<PatchEdgeResponse<TPatch>> PatchEdgeAsync<TPatch, TReturned>(
+        public async Task<PatchEdgeResponse<TReturned>> PatchEdgeAsync<TPatch, TReturned>(
             string graphName,
             string collectionName,
             string edgeKey,
-            TReturned edge,
-            PatchEdgeQuery query = null)
+            TPatch edge,
+            PatchEdgeQuery query = null,
+            CancellationToken cancellationToken = default)
         {
-            var content = GetContent(edge, true, true);
-
-            string uri = ApiRootPath + "/" + WebUtility.UrlEncode(graphName) +
-                "/edge/" + WebUtility.UrlEncode(collectionName) + "/" + WebUtility.UrlEncode(edgeKey);
-
-            if (query != null)
-            {
-                uri += "?" + query.ToQueryString();
-            }
-
-            using (var response = await Transport.PatchAsync(uri, content))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    return DeserializeJsonFromStream<PatchEdgeResponse<TPatch>>(stream);
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await PatchRequestAsync(
+                $"{ApiRootPath}/{WebUtility.UrlEncode(graphName)}/edge/{WebUtility.UrlEncode(collectionName)}/{WebUtility.UrlEncode(edgeKey)}",
+                response => new PatchEdgeResponse<TReturned>(response), edge, query, cancellationToken);
         }
 
         /// <summary>
@@ -657,24 +467,12 @@ namespace ArangoDBNetStandard.GraphApi
             string collectionName,
             string key,
             T vertex,
-            PutVertexQuery query = null)
+            PutVertexQuery query = null,
+            CancellationToken cancellationToken = default)
         {
-            string uri = ApiRootPath + "/" + WebUtility.UrlEncode(graphName) +
-               "/vertex/" + WebUtility.UrlEncode(collectionName) + "/" + WebUtility.UrlEncode(key);
-            if (query != null)
-            {
-                uri += "?" + query.ToQueryString();
-            }
-            var content = GetContent(vertex, true, true);
-            using (var response = await Transport.PutAsync(uri, content))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    return DeserializeJsonFromStream<PutVertexResponse<T>>(stream);
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await PutRequestAsync(
+                $"{ApiRootPath}/{WebUtility.UrlEncode(graphName)}/vertex/{WebUtility.UrlEncode(collectionName)}/{WebUtility.UrlEncode(key)}",
+                response => new PutVertexResponse<T>(response), vertex, query, cancellationToken);
         }
     }
 }

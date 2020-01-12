@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 
 using ArangoDBNetStandard.Serialization;
@@ -21,18 +22,10 @@ namespace ArangoDBNetStandard.UserApi
         {
         }
 
-        public async Task<DeleteUserResponse> DeleteUserAsync(string username)
+        public async Task<DeleteUserResponse> DeleteUserAsync(string username, CancellationToken cancellationToken = default)
         {
-            string uri = ApiRootPath + "/" + WebUtility.HtmlEncode(username);
-            using (var response = await Transport.DeleteAsync(uri))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    return DeserializeJsonFromStream<DeleteUserResponse>(stream);
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await DeleteRequestAsync($"{ApiRootPath}/{WebUtility.HtmlEncode(username)}",
+                response => new DeleteUserResponse(response), null, cancellationToken);
         }
     }
 }

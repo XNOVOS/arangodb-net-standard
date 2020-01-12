@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
+using ArangoDBNetStandard.Models;
 
 namespace ArangoDBNetStandard.GraphApi.Models
 {
     /// <summary>
     /// Represents query parameters used when creating a new graph edge.
     /// </summary>
-    public class PostEdgeQuery
+    public class PostEdgeQuery : RequestOptionsBase
     {
         /// <summary>
         /// Whether the response should contain the complete new version of the document.
@@ -16,19 +17,5 @@ namespace ArangoDBNetStandard.GraphApi.Models
         /// Whether the request should wait until synced to disk.
         /// </summary>
         public bool? WaitForSync { get; set; }
-
-        internal string ToQueryString()
-        {
-            List<string> query = new List<string>();
-            if (ReturnNew != null)
-            {
-                query.Add("returnNew=" + ReturnNew.ToString().ToLower());
-            }
-            if (WaitForSync != null)
-            {
-                query.Add("waitForSync=" + WaitForSync.ToString().ToLower());
-            }
-            return string.Join("&", query);
-        }
     }
 }

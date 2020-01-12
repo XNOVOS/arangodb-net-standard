@@ -1,9 +1,11 @@
-﻿namespace ArangoDBNetStandard.AqlFunctionApi.Models
+﻿using ArangoDBNetStandard.Models;
+
+namespace ArangoDBNetStandard.AqlFunctionApi.Models
 {
     /// <summary>
     /// Represents query parameters used when deleting an AQL user function.
     /// </summary>
-    public class DeleteAqlFunctionQuery
+    public class DeleteAqlFunctionQuery : RequestOptionsBase
     {
         /// <summary>
         /// Whether the function name provided is treated as a namespace prefix.
@@ -13,17 +15,5 @@
         /// If none matches the name, HTTP 404 is returned.
         /// </summary>
         public bool? Group { get; set; }
-
-        internal string ToQueryString()
-        {
-            if (Group != null)
-            {
-                return "group=" + Group.ToString().ToLower();
-            }
-            else
-            {
-                return "";
-            }
-        }
     }
 }

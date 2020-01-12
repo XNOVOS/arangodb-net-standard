@@ -22,7 +22,7 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <returns></returns>
         Task<PostDocumentResponse<T>> PostDocumentAsync<T>(string collectionName,
             T document,
-            PostDocumentsQuery query = null,
+            PostDocumentsOptions query = null,
             CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -36,7 +36,7 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <returns></returns>
         Task<PostDocumentsResponse<T>> PostDocumentsAsync<T>(string collectionName,
             IEnumerable<T> documents,
-            PostDocumentsQuery query = null,
+            PostDocumentsOptions query = null,
             CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -50,7 +50,7 @@ namespace ArangoDBNetStandard.DocumentApi
         Task<PostDocumentsResponse<T>> PutDocumentsAsync<T>(
            string collectionName,
            IEnumerable<T> documents,
-           PutDocumentsQuery query = null,
+           PutDocumentsOptions query = null,
            CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -67,7 +67,7 @@ namespace ArangoDBNetStandard.DocumentApi
         Task<PostDocumentResponse<T>> PutDocumentAsync<T>(
             string documentId,
             T document,
-            PutDocumentsQuery opts = null,
+            PutDocumentsOptions opts = null,
             CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -95,7 +95,7 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <remarks>
         /// This method overload is provided as a convenience when the client does not care about the type of <see cref="DeleteDocumentResponse{T}.Old"/>
         /// in the returned <see cref="DeleteDocumentResponse{object}"/>. Its value will be <see cref="null"/> when 
-        /// <see cref="DeleteDocumentsQuery.ReturnOld"/> is either <see cref="false"/> or not set, so this overload is useful in the default case 
+        /// <see cref="DeleteDocumentsOptions.ReturnOld"/> is either <see cref="false"/> or not set, so this overload is useful in the default case 
         /// when deleting documents.
         /// </remarks>
         /// <param name="collectionName"></param>
@@ -105,7 +105,7 @@ namespace ArangoDBNetStandard.DocumentApi
         Task<DeleteDocumentResponse<object>> DeleteDocumentAsync(
             string collectionName,
             string documentKey,
-            DeleteDocumentsQuery query = null,
+            DeleteDocumentsOptions query = null,
             CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -114,7 +114,7 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <remarks>
         /// This method overload is provided as a convenience when the client does not care about the type of <see cref="DeleteDocumentResponse{T}.Old"/>
         /// in the returned <see cref="DeleteDocumentResponse{object}"/>. Its value will be <see cref="null"/> when 
-        /// <see cref="DeleteDocumentsQuery.ReturnOld"/> is either <see cref="false"/> or not set, so this overload is useful in the default case 
+        /// <see cref="DeleteDocumentsOptions.ReturnOld"/> is either <see cref="false"/> or not set, so this overload is useful in the default case 
         /// when deleting documents.
         /// </remarks>
         /// <param name="documentId"></param>
@@ -122,7 +122,7 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <returns></returns>
         Task<DeleteDocumentResponse<object>> DeleteDocumentAsync(
             string documentId,
-            DeleteDocumentsQuery query = null,
+            DeleteDocumentsOptions query = null,
             CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -132,7 +132,7 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <remarks>
         /// This method overload is provided as a convenience when the client does not care about the type of <see cref="DeleteDocumentResponse{T}.Old"/>
         /// in the returned <see cref="DeleteDocumentsResponse{object}"/>. These will be <see cref="null"/> when 
-        /// <see cref="DeleteDocumentsQuery.ReturnOld"/> is either <see cref="false"/> or not set, so this overload is useful in the default case 
+        /// <see cref="DeleteDocumentsOptions.ReturnOld"/> is either <see cref="false"/> or not set, so this overload is useful in the default case 
         /// when deleting documents.
         /// </remarks>
         /// <param name="collectionName"></param>
@@ -142,7 +142,7 @@ namespace ArangoDBNetStandard.DocumentApi
         Task<DeleteDocumentsResponse<object>> DeleteDocumentsAsync(
           string collectionName,
           IEnumerable<string> selectors,
-          DeleteDocumentsQuery query = null,
+          DeleteDocumentsOptions query = null,
           CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -156,7 +156,7 @@ namespace ArangoDBNetStandard.DocumentApi
         Task<DeleteDocumentResponse<T>> DeleteDocumentAsync<T>(
           string collectionName,
           string documentKey,
-          DeleteDocumentsQuery query = null,
+          DeleteDocumentsOptions query = null,
           CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -167,7 +167,7 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <returns></returns>
         Task<DeleteDocumentResponse<T>> DeleteDocumentAsync<T>(
           string documentId,
-          DeleteDocumentsQuery query = null,
+          DeleteDocumentsOptions query = null,
           CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -182,7 +182,7 @@ namespace ArangoDBNetStandard.DocumentApi
         Task<DeleteDocumentsResponse<T>> DeleteDocumentsAsync<T>(
           string collectionName,
           IEnumerable<string> selectors,
-          DeleteDocumentsQuery query = null,
+          DeleteDocumentsOptions query = null,
           CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -203,7 +203,7 @@ namespace ArangoDBNetStandard.DocumentApi
         /// </summary>
         /// <typeparam name="T">Type of the patch object used to partially update documents.</typeparam>
         /// <typeparam name="U">Type of the returned documents, only applies when
-        /// <see cref="PatchDocumentsQuery.ReturnNew"/> or <see cref="PatchDocumentsQuery.ReturnOld"/>
+        /// <see cref="PatchDocumentsOptions.ReturnNew"/> or <see cref="PatchDocumentsOptions.ReturnOld"/>
         /// are used.</typeparam>
         /// <param name="collectionName"></param>
         /// <param name="patches"></param>
@@ -212,7 +212,7 @@ namespace ArangoDBNetStandard.DocumentApi
         /// <returns></returns>
         Task<PatchDocumentsResponse<TResponse>> PatchDocumentsAsync<TPatch, TResponse>(string collectionName,
             IEnumerable<TPatch> patches,
-            PatchDocumentsQuery query = null,
+            PatchDocumentsOptions query = null,
             CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -226,7 +226,7 @@ namespace ArangoDBNetStandard.DocumentApi
         /// </summary>
         /// <typeparam name="T">Type of the patch object used to partially update a document.</typeparam>
         /// <typeparam name="U">Type of the returned document, only applies when
-        /// <see cref="PatchDocumentQuery.ReturnNew"/> or <see cref="PatchDocumentQuery.ReturnOld"/>
+        /// <see cref="PatchDocumentOptions.ReturnNew"/> or <see cref="PatchDocumentOptions.ReturnOld"/>
         /// are used.</typeparam>
         /// <param name="collectionName"></param>
         /// <param name="documentKey"></param>
@@ -237,7 +237,7 @@ namespace ArangoDBNetStandard.DocumentApi
           string collectionName,
           string documentKey,
           T body,
-          PatchDocumentQuery query = null,
+          PatchDocumentOptions query = null,
           CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -251,7 +251,7 @@ namespace ArangoDBNetStandard.DocumentApi
         /// </summary>
         /// <typeparam name="T">Type of the patch object used to partially update a document.</typeparam>
         /// <typeparam name="TResponse">Type of the returned document, only applies when
-        /// <see cref="PatchDocumentQuery.ReturnNew"/> or <see cref="PatchDocumentQuery.ReturnOld"/>
+        /// <see cref="PatchDocumentOptions.ReturnNew"/> or <see cref="PatchDocumentOptions.ReturnOld"/>
         /// are used.</typeparam>
         /// <param name="documentId"></param>
         /// <param name="body"></param>
@@ -261,7 +261,7 @@ namespace ArangoDBNetStandard.DocumentApi
         Task<PatchDocumentResponse<TResponse>> PatchDocumentAsync<TPatch, TResponse>(
           string documentId,
           TPatch body,
-          PatchDocumentQuery query = null,
+          PatchDocumentOptions query = null,
           CancellationToken cancellationToken = default);
 
         /// <summary>

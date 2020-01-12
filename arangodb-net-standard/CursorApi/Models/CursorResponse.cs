@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Net;
 using ArangoDBNetStandard.DocumentApi.Models;
+using ArangoDBNetStandard.Models;
 using Newtonsoft.Json;
 
 namespace ArangoDBNetStandard.CursorApi.Models
 {
+    [JsonObject]
     /// <summary>
     /// Response from ArangoDB when creating a new cursor.
     /// </summary>
@@ -13,7 +15,7 @@ namespace ArangoDBNetStandard.CursorApi.Models
     {
         [JsonConstructor]
         public CursorResponse(bool error, long count, HttpStatusCode code, CursorResponseExtra extra, bool cached,
-            bool hasMore, IEnumerable<T> result, string id) : base(new ApiResponse(error, code, null, null))
+            bool hasMore, IEnumerable<T> result, string id) : base(new ApiResponse(error, code))
         {
             Count = count;
             Extra = extra;

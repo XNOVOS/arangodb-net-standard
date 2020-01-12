@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
+using ArangoDBNetStandard.Models;
 using Newtonsoft.Json;
 
 namespace ArangoDBNetStandard.DocumentApi.Models

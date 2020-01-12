@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using ArangoDBNetStandard.Models;
 
 namespace ArangoDBNetStandard.GraphApi.Models
 {
@@ -12,10 +13,5 @@ namespace ArangoDBNetStandard.GraphApi.Models
         /// </summary>
         public bool? WaitForSync { get; set; }
 
-        protected override void PrepareQueryStringValues(IDictionary<string, string> values)
-        {
-            if (WaitForSync.HasValue)
-                values.Add(nameof(WaitForSync).ToCamelCase(), WaitForSync.ToString().ToLowerInvariant());
-        }
     }
 }

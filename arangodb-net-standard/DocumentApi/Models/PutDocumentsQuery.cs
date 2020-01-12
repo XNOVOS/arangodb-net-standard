@@ -1,12 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using ArangoDBNetStandard.Models;
 
 namespace ArangoDBNetStandard.DocumentApi.Models
 {
     /// <summary>
     /// Options used when calling ArangoDB PUT document endpoint.
     /// </summary>
-    public class PutDocumentsQuery : RequestOptionsBase
+    public class PutDocumentsOptions : RequestOptionsBase
     {
         /// <summary>
         /// Whether to wait until the new documents have been synced to disk.
@@ -33,17 +34,5 @@ namespace ArangoDBNetStandard.DocumentApi.Models
         /// documents under <see cref="PostDocumentResponse{T}.New"/>.
         /// </summary>
         public bool? ReturnNew { get; set; }
-
-        protected override void PrepareQueryStringValues(IDictionary<string, string> values)
-        {
-            if (WaitForSync.HasValue)
-                values.Add(nameof(WaitForSync).ToCamelCase(), WaitForSync.ToString().ToLowerInvariant());
-            if (ReturnNew.HasValue)
-                values.Add(nameof(ReturnNew).ToCamelCase(), ReturnNew.ToString().ToLowerInvariant());
-            if (ReturnOld.HasValue)
-                values.Add(nameof(ReturnOld).ToCamelCase(), ReturnOld.ToString().ToLowerInvariant());
-            if (IgnoreRevs.HasValue)
-                values.Add(nameof(IgnoreRevs).ToCamelCase(), IgnoreRevs.ToString().ToLowerInvariant());
-        }
     }
 }

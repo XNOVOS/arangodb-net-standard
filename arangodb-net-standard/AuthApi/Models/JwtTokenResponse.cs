@@ -1,4 +1,5 @@
 ﻿using ArangoDBNetStandard.DocumentApi.Models;
+using ArangoDBNetStandard.Models;
 using Newtonsoft.Json;
 
 namespace ArangoDBNetStandard.AuthApi.Models

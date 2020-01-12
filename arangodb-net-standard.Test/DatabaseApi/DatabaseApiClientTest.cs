@@ -3,6 +3,7 @@ using ArangoDBNetStandard.DatabaseApi;
 using ArangoDBNetStandard.DatabaseApi.Models;
 using System.Net;
 using System.Threading.Tasks;
+using ArangoDBNetStandard.Models;
 using Xunit;
 
 namespace ArangoDBNetStandardTest.DatabaseApi
@@ -52,7 +53,7 @@ namespace ArangoDBNetStandardTest.DatabaseApi
                 });
             });
 
-            ApiResponse apiError = ex.ApiError;
+            ApiResponse apiError = ex.ResponseDetails;
 
             Assert.Equal(HttpStatusCode.Forbidden, apiError.Code);
             Assert.Equal(1230, apiError.ErrorNum);
@@ -91,7 +92,7 @@ namespace ArangoDBNetStandardTest.DatabaseApi
             await _fixture.DatabaseClientSystem.DeleteDatabaseAsync(
                 nameof(PostDatabaseAsync_ShouldThrow_WhenDatabaseToCreateAlreadyExist));
 
-            ApiResponse apiError = ex.ApiError;
+            ApiResponse apiError = ex.ResponseDetails;
 
             Assert.Equal(HttpStatusCode.Conflict, apiError.Code);
             Assert.Equal(1207, apiError.ErrorNum);
@@ -130,7 +131,7 @@ namespace ArangoDBNetStandardTest.DatabaseApi
                 });
             });
 
-            ApiResponse apiError = ex.ApiError;
+            ApiResponse apiError = ex.ResponseDetails;
 
             Assert.Equal(HttpStatusCode.NotFound, apiError.Code);
             Assert.Equal(1228, apiError.ErrorNum);
@@ -168,7 +169,7 @@ namespace ArangoDBNetStandardTest.DatabaseApi
                 await _fixture.DatabaseClientOther.GetDatabasesAsync();
             });
 
-            ApiResponse apiError = ex.ApiError;
+            ApiResponse apiError = ex.ResponseDetails;
 
             Assert.Equal(HttpStatusCode.Forbidden, apiError.Code);
             Assert.Equal(1230, apiError.ErrorNum);
@@ -214,7 +215,7 @@ namespace ArangoDBNetStandardTest.DatabaseApi
                 await _fixture.DatabaseClientNonExistent.GetDatabasesAsync();
             });
 
-            ApiResponse apiError = ex.ApiError;
+            ApiResponse apiError = ex.ResponseDetails;
 
             Assert.Equal(HttpStatusCode.NotFound, apiError.Code);
             Assert.Equal(1228, apiError.ErrorNum);
@@ -257,7 +258,7 @@ namespace ArangoDBNetStandardTest.DatabaseApi
                 await _fixture.DatabaseClientNonExistent.GetDatabasesAsync();
             });
 
-            ApiResponse apiError = ex.ApiError;
+            ApiResponse apiError = ex.ResponseDetails;
 
             Assert.Equal(HttpStatusCode.NotFound, apiError.Code);
             Assert.Equal(1228, apiError.ErrorNum);
@@ -290,8 +291,8 @@ namespace ArangoDBNetStandardTest.DatabaseApi
             {
                 await _systemClient.DeleteDatabaseAsync("bogusDatabase");
             });
-            Assert.Equal(HttpStatusCode.NotFound, ex.ApiError.Code);
-            Assert.Equal(1228, ex.ApiError.ErrorNum); // ARANGO_DATABASE_NOT_FOUND
+            Assert.Equal(HttpStatusCode.NotFound, ex.ResponseDetails.Code);
+            Assert.Equal(1228, ex.ResponseDetails.ErrorNum); // ARANGO_DATABASE_NOT_FOUND
         }
 
         [Fact]

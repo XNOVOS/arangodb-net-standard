@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Net;
 using ArangoDBNetStandard.DocumentApi.Models;
+using ArangoDBNetStandard.Models;
 using Newtonsoft.Json;
 
 namespace ArangoDBNetStandard.CollectionApi.Models

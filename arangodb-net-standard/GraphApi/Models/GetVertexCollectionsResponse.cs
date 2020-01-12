@@ -1,26 +1,24 @@
 ﻿using System.Collections.Generic;
 using System.Net;
+using ArangoDBNetStandard.Models;
+using JetBrains.Annotations;
+using Newtonsoft.Json;
 
 namespace ArangoDBNetStandard.GraphApi.Models
 {
     /// <summary>
     /// Represents a response containing the list of vertex collections within a graph.
     /// </summary>
-    public class GetVertexCollectionsResponse
+    [JsonObject]
+    public class GetVertexCollectionsResponse : ListResponse<string>
     {
-        /// <summary>
-        /// Indicates whether an error occurred (false in this case).
-        /// </summary>
-        public bool Error { get; set; }
+        [JsonConstructor]
+        public GetVertexCollectionsResponse(bool error, HttpStatusCode code, int? errorNum, IEnumerable<string> collections) : base(collections, new ApiResponse(error, code, null, errorNum))
+        {
+        }
 
-        /// <summary>
-        /// The HTTP status code.
-        /// </summary>
-        public HttpStatusCode Code { get; set; }
-
-        /// <summary>
-        /// The list of vertex collections.
-        /// </summary>
-        public IEnumerable<string> Collections { get; set; }
+        public GetVertexCollectionsResponse([NotNull] ApiResponse responseDetails) : base(responseDetails)
+        {
+        }
     }
 }

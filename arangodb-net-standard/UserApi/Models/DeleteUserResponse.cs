@@ -1,11 +1,19 @@
 ﻿using System.Net;
+using ArangoDBNetStandard.Models;
+using JetBrains.Annotations;
+using Newtonsoft.Json;
 
 namespace ArangoDBNetStandard.UserApi.Models
 {
-    public class DeleteUserResponse
+    public class DeleteUserResponse : SimpleCompletionResponse
     {
-        public bool Error { get; set; }
+        [JsonConstructor]
+        public DeleteUserResponse(bool error, HttpStatusCode code) : base(error, code)
+        {
+        }
 
-        public HttpStatusCode Code { get; set; }
+        public DeleteUserResponse([NotNull] ApiResponse responseDetails) : base(responseDetails)
+        {
+        }
     }
 }

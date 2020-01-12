@@ -2,6 +2,7 @@
 using ArangoDBNetStandard.AqlFunctionApi.Models;
 using System.Net;
 using System.Threading.Tasks;
+using ArangoDBNetStandard.Models;
 using Xunit;
 
 namespace ArangoDBNetStandardTest.AqlFunctionApi
@@ -16,6 +17,7 @@ namespace ArangoDBNetStandardTest.AqlFunctionApi
         public AqlFunctionApiClientTest(AqlFunctionApiClientTestFixture fixture)
         {
             _fixture = fixture;
+            _fixture.AqlFunctionClient.ThrowErrorsAsExceptions = false;
         }
 
         [Fact]
@@ -27,21 +29,22 @@ namespace ArangoDBNetStandardTest.AqlFunctionApi
                 nameof(PostAqlFunctionAsync_ShouldSucceed));
 
             PostAqlFunctionResponse response = await _fixture.AqlFunctionClient.PostAqlFunctionAsync(
-                new PostAqlFunctionBody()
+                new PostAqlFunctionBody
                 {
                     Name = fullName,
                     Code = "function (celsius) { return celsius * 1.8 + 32; }",
                     IsDeterministic = true
                 });
 
-            Assert.False(response.Error);
-            Assert.Equal(HttpStatusCode.Created, response.Code);
+            Assert.False(response.ResponseDetails.Error);
+            Assert.Equal(HttpStatusCode.Created, response.ResponseDetails.Code);
             Assert.True(response.IsNewlyCreated);
         }
 
         [Fact]
         public async Task PostAqlFunctionAsync_ShouldThrow_WhenFunctionNameIsInvalid()
         {
+            _fixture.AqlFunctionClient.ThrowErrorsAsExceptions = true;
             var ex = await Assert.ThrowsAsync<ApiErrorException>(async () =>
             {
                 await _fixture.AqlFunctionClient.PostAqlFunctionAsync(
@@ -54,10 +57,27 @@ namespace ArangoDBNetStandardTest.AqlFunctionApi
                     });
             });
 
-            ApiErrorResponse apiError = ex.ApiError;
+            ApiResponse apiError = ex.ResponseDetails;
 
             Assert.Equal(HttpStatusCode.BadRequest, apiError.Code);
             Assert.Equal(1580, apiError.ErrorNum); // ERROR_QUERY_FUNCTION_INVALID_NAME
+        }
+
+        [Fact]
+        public async Task PostAqlFunctionAsync_ShouldReturnError_WhenFunctionNameIsInvalid()
+        {
+            PostAqlFunctionResponse postAqlFunctionResponse = await _fixture.AqlFunctionClient.PostAqlFunctionAsync(
+                new PostAqlFunctionBody()
+                {
+                    // A non-fully qualified name will give an error
+                    Name = nameof(PostAqlFunctionAsync_ShouldSucceed),
+                    Code = "function (celsius) { return celsius * 1.8 + 32; }",
+                    IsDeterministic = true
+                });
+
+            Assert.False(postAqlFunctionResponse.IsSuccess);
+            Assert.Equal(HttpStatusCode.BadRequest, postAqlFunctionResponse.ResponseDetails.Code);
+            Assert.Equal(1580, postAqlFunctionResponse.ResponseDetails.ErrorNum); // ERROR_QUERY_FUNCTION_INVALID_NAME
         }
 
         [Fact]
@@ -87,14 +107,15 @@ namespace ArangoDBNetStandardTest.AqlFunctionApi
                         Group = true
                     });
 
-            Assert.False(deleteResponse.Error);
-            Assert.Equal(HttpStatusCode.OK, deleteResponse.Code);
+            Assert.False(deleteResponse.ResponseDetails.Error);
+            Assert.Equal(HttpStatusCode.OK, deleteResponse.ResponseDetails.Code);
             Assert.Equal(1, deleteResponse.DeletedCount);
         }
 
         [Fact]
         public async Task DeleteAqlFunctionAsync_ShouldThrow_WhenFunctionNameIsInvalid()
         {
+            _fixture.AqlFunctionClient.ThrowErrorsAsExceptions = true;
             var ex = await Assert.ThrowsAsync<ApiErrorException>(async () =>
             {
                 await _fixture.AqlFunctionClient.DeleteAqlFunctionAsync(
@@ -105,10 +126,25 @@ namespace ArangoDBNetStandardTest.AqlFunctionApi
                     });
             });
 
-            ApiErrorResponse apiError = ex.ApiError;
+            ApiResponse apiError = ex.ResponseDetails;
 
             Assert.Equal(HttpStatusCode.BadRequest, apiError.Code);
             Assert.Equal(1580, apiError.ErrorNum); // ERROR_QUERY_FUNCTION_INVALID_NAME
+        }
+
+        [Fact]
+        public async Task DeleteAqlFunctionAsync_ShouldReturnError_WhenFunctionNameIsInvalid()
+        {
+            DeleteAqlFunctionResponse deleteAqlFunctionResponse = await _fixture.AqlFunctionClient.DeleteAqlFunctionAsync(
+                "你好",
+                new DeleteAqlFunctionQuery()
+                {
+                    Group = true
+                });
+
+            Assert.False(deleteAqlFunctionResponse.IsSuccess);
+            Assert.Equal(HttpStatusCode.BadRequest, deleteAqlFunctionResponse.ResponseDetails.Code);
+            Assert.Equal(1580, deleteAqlFunctionResponse.ResponseDetails.ErrorNum); // ERROR_QUERY_FUNCTION_INVALID_NAME
         }
 
         [Fact]
@@ -137,11 +173,11 @@ namespace ArangoDBNetStandardTest.AqlFunctionApi
                         Namespace = groupName
                     });
 
-            Assert.False(getResponse.Error);
-            Assert.Equal(HttpStatusCode.OK, getResponse.Code);
-            Assert.Single(getResponse.Result);
+            Assert.False(getResponse.ResponseDetails.Error);
+            Assert.Equal(HttpStatusCode.OK, getResponse.ResponseDetails.Code);
+            Assert.Single(getResponse);
 
-            AqlFunctionResult firstResult = getResponse.Result[0];
+            AqlFunctionResult firstResult = getResponse[0];
 
             Assert.Equal(fullName, firstResult.Name);
             Assert.Equal("function (celsius) { return celsius * 1.8 + 32; }", firstResult.Code);

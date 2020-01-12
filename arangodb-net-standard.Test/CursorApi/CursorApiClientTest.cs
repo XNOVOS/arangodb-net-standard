@@ -143,8 +143,8 @@ namespace ArangoDBNetStandardTest.CursorApi
                 await _cursorApi.PostCursorAsync<MyModel>("RETURN blah");
             });
 
-            Assert.NotNull(ex.ApiError.ErrorMessage);
-            Assert.Equal(1203, ex.ApiError.ErrorNum);
+            Assert.NotNull(ex.ResponseDetails.ErrorMessage);
+            Assert.Equal(1203, ex.ResponseDetails.ErrorNum);
         }
 
         [Fact]
@@ -205,9 +205,9 @@ namespace ArangoDBNetStandardTest.CursorApi
             var ex = await Assert.ThrowsAsync<ApiErrorException>(async () => 
                 await _cursorApi.PutCursorAsync<long>("nada"));
 
-            Assert.NotNull(ex.ApiError.ErrorMessage);
-            Assert.Equal(1600, ex.ApiError.ErrorNum);
-            Assert.Equal(HttpStatusCode.NotFound, ex.ApiError.Code);
+            Assert.NotNull(ex.ResponseDetails.ErrorMessage);
+            Assert.Equal(1600, ex.ResponseDetails.ErrorNum);
+            Assert.Equal(HttpStatusCode.NotFound, ex.ResponseDetails.Code);
         }
 
         [Fact]
@@ -229,9 +229,9 @@ namespace ArangoDBNetStandardTest.CursorApi
             var ex = await Assert.ThrowsAsync<ApiErrorException>(async () => 
                 await _cursorApi.DeleteCursorAsync("nada"));
 
-            Assert.NotNull(ex.ApiError.ErrorMessage);
-            Assert.Equal(1600, ex.ApiError.ErrorNum);
-            Assert.Equal(HttpStatusCode.NotFound, ex.ApiError.Code);
+            Assert.NotNull(ex.ResponseDetails.ErrorMessage);
+            Assert.Equal(1600, ex.ResponseDetails.ErrorNum);
+            Assert.Equal(HttpStatusCode.NotFound, ex.ResponseDetails.Code);
         }
 
         [Fact]

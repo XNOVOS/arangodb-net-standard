@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using ArangoDBNetStandard.Models;
 
 namespace ArangoDBNetStandard.DocumentApi.Models
 {

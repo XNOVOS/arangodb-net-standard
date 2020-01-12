@@ -1,6 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Net;
+using ArangoDBNetStandard.Models;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
 
@@ -10,14 +10,12 @@ namespace ArangoDBNetStandard.GraphApi.Models
     /// Represents a response containing the list of graph.
     /// </summary>
     [JsonObject]
-    public class GetGraphsResponse : ResponseBase, IReadOnlyList<GraphResult>
+    public class GetGraphsResponse : ListResponse<GraphResult>
     {
-        private readonly IList<GraphResult> _results;
-
         [JsonConstructor]
-        public GetGraphsResponse(HttpStatusCode code, bool error, IEnumerable<GraphResult> graphs) : base(new ApiResponse(error, code))
+        public GetGraphsResponse(HttpStatusCode code, bool error, IEnumerable<GraphResult> graphs) : base(graphs, new ApiResponse(error, code))
         {
-            _results = new List<GraphResult>(graphs ?? new List<GraphResult>());
+            
         }
 
         /// <summary>
@@ -28,19 +26,5 @@ namespace ArangoDBNetStandard.GraphApi.Models
         public GetGraphsResponse([NotNull] ApiResponse responseDetails) : base(responseDetails)
         {
         }
-
-        public IEnumerator<GraphResult> GetEnumerator()
-        {
-            return _results.GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        public int Count => _results.Count;
-
-        public GraphResult this[int index] => _results[index];
     }
 }

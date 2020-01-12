@@ -1,4 +1,5 @@
-﻿using ArangoDBNetStandard.AqlFunctionApi.Models;
+﻿using System.Threading;
+using ArangoDBNetStandard.AqlFunctionApi.Models;
 using System.Threading.Tasks;
 
 namespace ArangoDBNetStandard.AqlFunctionApi
@@ -15,7 +16,7 @@ namespace ArangoDBNetStandard.AqlFunctionApi
         /// </summary>
         /// <param name="body">The body of the request containing required properties.</param>
         /// <returns></returns>
-        Task<PostAqlFunctionResponse> PostAqlFunctionAsync(PostAqlFunctionBody body);
+        Task<PostAqlFunctionResponse> PostAqlFunctionAsync(PostAqlFunctionBody body, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Removes an existing AQL user function or function group, identified by name.
@@ -26,13 +27,13 @@ namespace ArangoDBNetStandard.AqlFunctionApi
         /// <returns></returns>
         Task<DeleteAqlFunctionResponse> DeleteAqlFunctionAsync(
             string name,
-            DeleteAqlFunctionQuery query = null);
+            DeleteAqlFunctionQuery query = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Get all registered AQL user functions.
         /// </summary>
         /// <returns></returns>
         Task<GetAqlFunctionsResponse> GetAqlFunctionsAsync(
-            GetAqlFunctionsQuery query = null);
+            GetAqlFunctionsQuery query = null, CancellationToken cancellationToken = default);
     }
 }

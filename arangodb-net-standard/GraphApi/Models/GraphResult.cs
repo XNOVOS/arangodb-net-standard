@@ -10,11 +10,11 @@ namespace ArangoDBNetStandard.GraphApi.Models
     public class GraphResult
     {
         [JsonConstructor]
-        public GraphResult(string id, string key, string rev, string name, string smartGraphAttribute, int replicationFactor, IEnumerable<string> orphanCollections, int numberOfShards, bool isSmart, IEnumerable<EdgeDefinition> edgeDefinitions)
+        public GraphResult(string _id, string _key, string _rev, string name, string smartGraphAttribute, int replicationFactor, IEnumerable<string> orphanCollections, int numberOfShards, bool isSmart, IEnumerable<EdgeDefinition> edgeDefinitions)
         {
-            _id = id;
-            _key = key;
-            _rev = rev;
+            this._id = _id;
+            this._key = _key;
+            this._rev = _rev;
             Name = name;
             SmartGraphAttribute = smartGraphAttribute;
             ReplicationFactor = replicationFactor;

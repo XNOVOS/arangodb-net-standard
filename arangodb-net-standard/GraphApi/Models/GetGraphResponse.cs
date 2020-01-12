@@ -1,13 +1,18 @@
 ﻿using System.Net;
+using ArangoDBNetStandard.Models;
+using Newtonsoft.Json;
 
 namespace ArangoDBNetStandard.GraphApi.Models
 {
-    public class GetGraphResponse
+    public class GetGraphResponse : GraphResponse
     {
-        public GraphResult Graph { get; set; }
+        [JsonConstructor]
+        public GetGraphResponse(HttpStatusCode code, GraphResult graph) : base(code, graph)
+        {
+        }
 
-        public HttpStatusCode Code { get; set; }
-
-        public bool Error { get; set; }
+        public GetGraphResponse(ApiResponse errorDetails) : base(errorDetails)
+        {
+        }
     }
 }

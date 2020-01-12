@@ -1,4 +1,6 @@
 ﻿using System.Net;
+using ArangoDBNetStandard.Models;
+using Newtonsoft.Json;
 
 namespace ArangoDBNetStandard.GraphApi.Models
 {
@@ -6,21 +8,15 @@ namespace ArangoDBNetStandard.GraphApi.Models
     /// Represents a response containing information about the graph
     /// and its new edge definition.
     /// </summary>
-    public class PostEdgeDefinitionResponse
+    public class PostEdgeDefinitionResponse : GraphResponse
     {
-        /// <summary>
-        /// The information about the modified graph.
-        /// </summary>
-        public GraphResult Graph { get; set; }
+        [JsonConstructor]
+        public PostEdgeDefinitionResponse(HttpStatusCode code, GraphResult graph) : base(code, graph)
+        {
+        }
 
-        /// <summary>
-        /// The HTTP status code.
-        /// </summary>
-        public HttpStatusCode Code { get; set; }
-
-        /// <summary>
-        /// Indicates whether an error occurred (false in this case).
-        /// </summary>
-        public bool Error { get; set; }
+        public PostEdgeDefinitionResponse(ApiResponse errorDetails) : base(errorDetails)
+        {
+        }
     }
 }

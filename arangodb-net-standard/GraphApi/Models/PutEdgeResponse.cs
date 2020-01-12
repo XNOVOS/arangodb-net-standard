@@ -1,17 +1,28 @@
 ﻿using System.Net;
+using ArangoDBNetStandard.Models;
+using JetBrains.Annotations;
+using Newtonsoft.Json;
 
 namespace ArangoDBNetStandard.GraphApi.Models
 {
-    public class PutEdgeResponse<T>
+    public class PutEdgeResponse<T> : ResponseBase
     {
-        public bool Error { get; set; }
+        public T Old { get; }
 
-        public HttpStatusCode Code { get; set; }
+        public T New { get; }
 
-        public T Old { get; set; }
+        public PutEdgeResult Edge { get; }
 
-        public T New { get; set; }
+        [JsonConstructor]
+        public PutEdgeResponse(bool error, HttpStatusCode code, T old, T @new, PutEdgeResult edge) : base(new ApiResponse(error, code))
+        {
+            Old = old;
+            New = @new;
+            Edge = edge;
+        }
 
-        public PutEdgeResult Edge { get; set; }
+        public PutEdgeResponse([NotNull] ApiResponse responseDetails) : base(responseDetails)
+        {
+        }
     }
 }

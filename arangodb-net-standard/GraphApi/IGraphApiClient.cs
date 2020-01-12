@@ -34,7 +34,7 @@ namespace ArangoDBNetStandard.GraphApi
         /// <summary>
         /// Deletes an existing graph object by name.
         /// Optionally all collections not used by other
-        /// graphs can be deleted as well, using <see cref = "DeleteGraphQuery" ></ see >.
+        /// graphs can be deleted as well, using <see cref = "DeleteGraphOptions" ></ see >.
         /// DELETE /_api/gharial/{graph-name}
         /// </summary>
         /// <param name="graphName"></param>
@@ -42,7 +42,8 @@ namespace ArangoDBNetStandard.GraphApi
         /// <returns></returns>
         Task<DeleteGraphResponse> DeleteGraphAsync(
           string graphName,
-          DeleteGraphQuery query = null);
+          DeleteGraphOptions query = null,
+          CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Selects information for a given graph.
@@ -51,7 +52,7 @@ namespace ArangoDBNetStandard.GraphApi
         /// </summary>
         /// <param name="graphName"></param>
         /// <returns></returns>
-        Task<GetGraphResponse> GetGraphAsync(string graphName);
+        Task<GetGraphResponse> GetGraphAsync(string graphName, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Lists all vertex collections within the given graph.
@@ -59,7 +60,7 @@ namespace ArangoDBNetStandard.GraphApi
         /// </summary>
         /// <param name="graph">The name of the graph.</param>
         /// <returns></returns>
-        Task<GetVertexCollectionsResponse> GetVertexCollectionsAsync(string graphName);
+        Task<GetVertexCollectionsResponse> GetVertexCollectionsAsync(string graphName, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Lists all edge collections within this graph.
@@ -67,7 +68,7 @@ namespace ArangoDBNetStandard.GraphApi
         /// </summary>
         /// <param name="graphName"></param>
         /// <returns></returns>
-        Task<GetEdgeCollectionsResponse> GetEdgeCollectionsAsync(string graphName);
+        Task<GetEdgeCollectionsResponse> GetEdgeCollectionsAsync(string graphName, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Adds an additional edge definition to the graph.
@@ -84,7 +85,8 @@ namespace ArangoDBNetStandard.GraphApi
         /// <returns></returns>
         Task<PostEdgeDefinitionResponse> PostEdgeDefinitionAsync(
           string graphName,
-          PostEdgeDefinitionBody body);
+          PostEdgeDefinitionBody body,
+          CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Adds a vertex collection to the set of orphan collections of the graph.
@@ -96,7 +98,8 @@ namespace ArangoDBNetStandard.GraphApi
         /// <returns></returns>
         Task<PostVertexCollectionResponse> PostVertexCollectionAsync(
           string graphName,
-          PostVertexCollectionBody body);
+          PostVertexCollectionBody body,
+          CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Adds a vertex to the given collection.
@@ -112,7 +115,8 @@ namespace ArangoDBNetStandard.GraphApi
           string graphName,
           string collectionName,
           T vertex,
-          PostVertexQuery query = null);
+          PostVertexOptions query = null,
+          CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Remove one edge definition from the graph. This will only remove the
@@ -127,7 +131,7 @@ namespace ArangoDBNetStandard.GraphApi
         Task<DeleteEdgeDefinitionResponse> DeleteEdgeDefinitionAsync(
           string graphName,
           string collectionName,
-          DeleteEdgeDefinitionQuery query = null,
+          DeleteEdgeDefinitionOptions query = null,
           CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -144,7 +148,8 @@ namespace ArangoDBNetStandard.GraphApi
         Task<DeleteVertexCollectionResponse> DeleteVertexCollectionAsync(
           string graphName,
           string collectionName,
-          DeleteVertexCollectionQuery query = null);
+          DeleteVertexCollectionOptions query = null,
+          CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Creates an edge in an existing graph.
@@ -164,7 +169,8 @@ namespace ArangoDBNetStandard.GraphApi
           string graphName,
           string collectionName,
           T edge,
-          PostEdgeQuery query = null);
+          PostEdgeQuery query = null,
+          CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets an edge from the given graph using the edge collection and _key attribute.
@@ -179,7 +185,8 @@ namespace ArangoDBNetStandard.GraphApi
            string graphName,
            string collectionName,
            string edgeKey,
-           GetEdgeQuery query = null);
+           GetEdgeQuery query = null,
+           CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets an edge from the given graph using the edge's document-handle.
@@ -193,7 +200,8 @@ namespace ArangoDBNetStandard.GraphApi
         Task<GetEdgeResponse<T>> GetEdgeAsync<T>(
           string graphName,
           string edgeHandle,
-          GetEdgeQuery query = null);
+          GetEdgeQuery query = null,
+          CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Removes an edge from the collection.
@@ -210,7 +218,8 @@ namespace ArangoDBNetStandard.GraphApi
           string graphName,
           string collectionName,
           string edgeKey,
-          DeleteEdgeQuery query = null);
+          DeleteEdgeQuery query = null,
+          CancellationToken cancellationToken = default);
 
         /// Gets a vertex from the given collection.
         /// GET/_api/gharial/{graph}/vertex/{collection}/{vertex}
@@ -224,7 +233,8 @@ namespace ArangoDBNetStandard.GraphApi
           string graphName,
           string collectionName,
           string vertexKey,
-          GetVertexQuery query = null);
+          GetVertexQuery query = null,
+          CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Removes a vertex from the collection.
@@ -239,7 +249,8 @@ namespace ArangoDBNetStandard.GraphApi
           string graphName,
           string collectionName,
           string vertexKey,
-          DeleteVertexQuery query = null);
+          DeleteVertexQuery query = null,
+          CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Updates the data of the specific vertex in the collection.
@@ -260,7 +271,8 @@ namespace ArangoDBNetStandard.GraphApi
           string collectionName,
           string vertexKey,
           TPatch body,
-          PatchVertexQuery query = null);
+          PatchVertexQuery query = null,
+          CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Replaces the data of an edge in the collection.
@@ -278,7 +290,8 @@ namespace ArangoDBNetStandard.GraphApi
           string collectionName,
           string edgeKey,
           T edge,
-          PutEdgeQuery query = null);
+          PutEdgeQuery query = null,
+          CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Change one specific edge definition.
@@ -294,7 +307,8 @@ namespace ArangoDBNetStandard.GraphApi
           string graphName,
           string collectionName,
           PutEdgeDefinitionBody body,
-          PutEdgeDefinitionQuery query = null);
+          PutEdgeDefinitionQuery query = null,
+          CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Updates the data of the specific edge in the collection.
@@ -308,12 +322,13 @@ namespace ArangoDBNetStandard.GraphApi
         /// <param name="edge"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        Task<PatchEdgeResponse<TPatch>> PatchEdgeAsync<TPatch, TReturned>(
+        Task<PatchEdgeResponse<TReturned>> PatchEdgeAsync<TPatch, TReturned>(
           string graphName,
           string collectionName,
           string edgeKey,
-          TReturned edge,
-          PatchEdgeQuery query = null);
+          TPatch edge,
+          PatchEdgeQuery query = null,
+          CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Replaces the data of a vertex in the collection.
@@ -331,6 +346,7 @@ namespace ArangoDBNetStandard.GraphApi
           string collectionName,
           string key,
           T vertex,
-          PutVertexQuery query = null);
+          PutVertexQuery query = null,
+          CancellationToken cancellationToken = default);
     }
 }

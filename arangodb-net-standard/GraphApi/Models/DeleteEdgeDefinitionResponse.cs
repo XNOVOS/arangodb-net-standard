@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using ArangoDBNetStandard.Models;
 using Newtonsoft.Json;
 
 namespace ArangoDBNetStandard.GraphApi.Models

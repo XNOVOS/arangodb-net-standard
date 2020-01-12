@@ -2,6 +2,7 @@
 using ArangoDBNetStandard.Serialization;
 using ArangoDBNetStandard.Transport;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ArangoDBNetStandard.AqlFunctionApi
@@ -12,9 +13,7 @@ namespace ArangoDBNetStandard.AqlFunctionApi
     /// </summary>
     public class AqlFunctionApiClient : ApiClientBase, IAqlFunctionApiClient
     {
-        private readonly IApiClientTransport _transport;
-
-        private readonly string _apiPath = "_api/aqlfunction";
+        protected override string ApiRootPath => "_api/aqlfunction";
 
         /// <summary>
         /// Create an instance of <see cref="AqlFunctionApiClient"/>
@@ -22,9 +21,8 @@ namespace ArangoDBNetStandard.AqlFunctionApi
         /// </summary>
         /// <param name="transport"></param>
         public AqlFunctionApiClient(IApiClientTransport transport)
-            : base(new JsonNetApiClientSerialization())
+            : base(transport, new JsonNetApiClientSerialization())
         {
-            _transport = transport;
         }
 
         /// <summary>
@@ -34,9 +32,8 @@ namespace ArangoDBNetStandard.AqlFunctionApi
         /// <param name="transport"></param>
         /// <param name="serializer"></param>
         public AqlFunctionApiClient(IApiClientTransport transport, IApiClientSerialization serializer)
-            : base(serializer)
+            : base(transport, serializer)
         {
-            _transport = transport;
         }
 
         /// <summary>
@@ -45,19 +42,10 @@ namespace ArangoDBNetStandard.AqlFunctionApi
         /// </summary>
         /// <param name="body">The body of the request containing required properties.</param>
         /// <returns></returns>
-        public async Task<PostAqlFunctionResponse> PostAqlFunctionAsync(PostAqlFunctionBody body)
+        public async Task<PostAqlFunctionResponse> PostAqlFunctionAsync(PostAqlFunctionBody body, CancellationToken cancellationToken = default)
         {
-            var content = GetContent(body, true, true);
-
-            using (var response = await _transport.PostAsync(_apiPath, content))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    return DeserializeJsonFromStream<PostAqlFunctionResponse>(stream);
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await PostRequestAsync(ApiRootPath, response => new PostAqlFunctionResponse(response), body, null,
+                cancellationToken);
         }
 
         /// <summary>
@@ -69,48 +57,21 @@ namespace ArangoDBNetStandard.AqlFunctionApi
         /// <returns></returns>
         public async Task<DeleteAqlFunctionResponse> DeleteAqlFunctionAsync(
             string name,
-            DeleteAqlFunctionQuery query = null)
+            DeleteAqlFunctionQuery query = null,
+            CancellationToken cancellationToken = default)
         {
-            string uri = _apiPath + '/' + WebUtility.UrlEncode(name);
-
-            if (query != null)
-            {
-                uri += "?" + query.ToQueryString();
-            }
-
-            using (var response = await _transport.DeleteAsync(uri))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    return DeserializeJsonFromStream<DeleteAqlFunctionResponse>(stream);
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await DeleteRequestAsync($"{ApiRootPath}{'/'}{WebUtility.UrlEncode(name)}",
+                response => new DeleteAqlFunctionResponse(response), query, cancellationToken);
         }
 
         /// <summary>
         /// Get all registered AQL user functions.
         /// </summary>
         /// <returns></returns>
-        public async Task<GetAqlFunctionsResponse> GetAqlFunctionsAsync(GetAqlFunctionsQuery query = null)
+        public async Task<GetAqlFunctionsResponse> GetAqlFunctionsAsync(GetAqlFunctionsQuery query = null, CancellationToken cancellationToken = default)
         {
-            string uri = _apiPath;
-
-            if (query != null)
-            {
-                uri += "?" + query.ToQueryString();
-            }
-
-            using (var response = await _transport.GetAsync(uri))
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    return DeserializeJsonFromStream<GetAqlFunctionsResponse>(stream);
-                }
-                throw await GetApiErrorException(response);
-            }
+            return await GetRequestAsync(ApiRootPath, response => new GetAqlFunctionsResponse(response), query,
+                cancellationToken);
         }
     }
 }

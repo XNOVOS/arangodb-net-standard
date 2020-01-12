@@ -42,11 +42,11 @@ namespace ArangoDBNetStandardTest.AuthApi
                         Password = "wrongpw"
                     });
             });
-            Assert.NotNull(ex.ApiError);
-            Assert.True(ex.ApiError.Error);
-            Assert.Equal(HttpStatusCode.Unauthorized, ex.ApiError.Code);
-            Assert.Equal(401, ex.ApiError.ErrorNum);
-            Assert.NotNull(ex.ApiError.ErrorMessage);
+            Assert.NotNull(ex.ResponseDetails);
+            Assert.True(ex.ResponseDetails.Error);
+            Assert.Equal(HttpStatusCode.Unauthorized, ex.ResponseDetails.Code);
+            Assert.Equal(401, ex.ResponseDetails.ErrorNum);
+            Assert.NotNull(ex.ResponseDetails.ErrorMessage);
         }
 
         [Fact]

@@ -32,7 +32,7 @@ namespace ArangoDBNetStandardTest.CollectionApi
                         Name = TestCollection
                     });
             }
-            catch (ApiErrorException ex) when (ex.ApiError.ErrorNum == 1207)
+            catch (ApiErrorException ex) when (ex.ResponseDetails.ErrorNum == 1207)
             {
                 // The collection must exist already, carry on...
                 Console.WriteLine(ex.Message);

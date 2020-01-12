@@ -1,15 +1,25 @@
 ﻿using System.Net;
+using ArangoDBNetStandard.Models;
+using JetBrains.Annotations;
+using Newtonsoft.Json;
 
 namespace ArangoDBNetStandard.GraphApi.Models
 {
-    public class DeleteVertexResponse<T>
+    public class DeleteVertexResponse<T> : ResponseBase
     {
-        public HttpStatusCode Code { get; set; }
+        public T Old { get; }
 
-        public bool Error { get; set; }
+        public bool Removed { get; }
 
-        public T Old { get; set; }
+        [JsonConstructor]
+        public DeleteVertexResponse(HttpStatusCode code, bool error, T old, bool removed) : base(new ApiResponse(error, code))
+        {
+            Old = old;
+            Removed = removed;
+        }
 
-        public bool Removed { get; set; }
+        public DeleteVertexResponse([NotNull] ApiResponse responseDetails) : base(responseDetails)
+        {
+        }
     }
 }

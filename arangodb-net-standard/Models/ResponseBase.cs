@@ -1,6 +1,6 @@
 using JetBrains.Annotations;
 
-namespace ArangoDBNetStandard
+namespace ArangoDBNetStandard.Models
 {
     public abstract class ResponseBase
     {

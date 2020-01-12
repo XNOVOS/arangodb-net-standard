@@ -1,5 +1,6 @@
 ﻿using ArangoDBNetStandard.AqlFunctionApi;
 using System.Threading.Tasks;
+using ArangoDBNetStandard;
 
 namespace ArangoDBNetStandardTest.AqlFunctionApi
 {

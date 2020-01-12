@@ -37,7 +37,7 @@ namespace ArangoDBNetStandard.CollectionApi
         }
 
         public async Task<PostCollectionResponse> PostCollectionAsync(PostCollectionBody body,
-            PostCollectionQuery options = null, CancellationToken cancellationToken = default)
+            PostCollectionOptions options = null, CancellationToken cancellationToken = default)
         {
             return await PostRequestAsync(
                 ApiRootPath,
@@ -84,7 +84,7 @@ namespace ArangoDBNetStandard.CollectionApi
         /// </summary>
         /// <param name="options"></param>
         /// <returns></returns>
-        public async Task<GetCollectionsResponse> GetCollectionsAsync(GetCollectionsQuery query = null,
+        public async Task<GetCollectionsResponse> GetCollectionsAsync(GetCollectionsOptions query = null,
             CancellationToken cancellationToken = default)
         {
             return await GetRequestAsync(ApiRootPath, response => new GetCollectionsResponse(response), query,

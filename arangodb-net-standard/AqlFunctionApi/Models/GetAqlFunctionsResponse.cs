@@ -2,28 +2,25 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Text;
+using ArangoDBNetStandard.Models;
+using JetBrains.Annotations;
+using Newtonsoft.Json;
 
 namespace ArangoDBNetStandard.AqlFunctionApi.Models
 {
     /// <summary>
     /// Represents a response returned when getting all AQL user functions.
     /// </summary>
-    public class GetAqlFunctionsResponse
+    [JsonObject]
+    public class GetAqlFunctionsResponse : ListResponse<AqlFunctionResult>
     {
-        /// <summary>
-        /// Indicates whether an error occurred (false in this case).
-        /// </summary>
-        public bool Error { get; set; }
+        [JsonConstructor]
+        public GetAqlFunctionsResponse(IEnumerable<AqlFunctionResult> result, bool error, HttpStatusCode code) : base(result, new ApiResponse(error, code))
+        {
+        }
 
-        /// <summary>
-        /// The HTTP status code.
-        /// </summary>
-        public HttpStatusCode Code { get; set; }
-
-        /// <summary>
-        /// All functions, or the ones matching
-        /// the <see cref="GetAqlFunctionsQuery.Namespace"/> parameter.
-        /// </summary>
-        public IList<AqlFunctionResult> Result { get; set; }
+        public GetAqlFunctionsResponse([NotNull] ApiResponse responseDetails) : base(responseDetails)
+        {
+        }
     }
 }

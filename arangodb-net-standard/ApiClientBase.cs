@@ -8,6 +8,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using ArangoDBNetStandard.CollectionApi.Models;
+using ArangoDBNetStandard.Models;
 
 namespace ArangoDBNetStandard
 {
@@ -69,11 +70,13 @@ namespace ArangoDBNetStandard
 
         private string ModifyUriForOptionsValues(string uri, RequestOptionsBase options)
         {
+            if (uri.Last() == '/')
+                uri = uri.Substring(0, uri.Length - 1);
             IReadOnlyDictionary<string, string> queryStringValues = options?.ToQueryStringValues();
             if (queryStringValues != null && queryStringValues.Any())
             {
                 uri = uri + "?" + string.Join("&",
-                          queryStringValues.Select(x => $"{x.Key}={WebUtility.UrlEncode(x.Value)}"));
+                          queryStringValues.Select(x => $"{x.Key}={WebUtility.UrlEncode(x.Value.ToLowerInvariant())}"));
             }
 
             return uri;
@@ -93,7 +96,7 @@ namespace ArangoDBNetStandard
             object content = null, CancellationToken cancellationToken = default)
         {
             uri = ModifyUriForOptionsValues(uri, options);
-            byte[] contentBytes = content != null ? GetContent(content, true, true) : new byte[0];
+            byte[] contentBytes = content != null ? GetContent(content, options?.ContentSerializationOptions?.CamelCasePropertyNames ?? true, options?.ContentSerializationOptions?.IgnoreNullValues ?? true) : new byte[0];
             return await DoRequestAsync(() => Transport.DeleteAsync(uri, contentBytes, cancellationToken), errorResponseFunc);
         }
 
@@ -103,7 +106,7 @@ namespace ArangoDBNetStandard
         {
             uri = ModifyUriForOptionsValues(uri, options);
 
-            byte[] contentBytes = content != null ? GetContent(content, true, true) : new byte[0];
+            byte[] contentBytes = content != null ? GetContent(content, options?.ContentSerializationOptions?.CamelCasePropertyNames ?? true, options?.ContentSerializationOptions?.IgnoreNullValues ?? true) : new byte[0];
             return await DoRequestAsync(() => Transport.PostAsync(uri, contentBytes, cancellationToken), errorResponseFunc);
         }
 
@@ -113,17 +116,8 @@ namespace ArangoDBNetStandard
         {
             uri = ModifyUriForOptionsValues(uri, options);
 
-            byte[] contentBytes = content != null ? GetContent(content, true, true) : new byte[0];
+            byte[] contentBytes = content != null ? GetContent(content, options?.ContentSerializationOptions?.CamelCasePropertyNames ?? true, options?.ContentSerializationOptions?.IgnoreNullValues ?? true) : new byte[0];
             return await DoRequestAsync(() => Transport.PatchAsync(uri, contentBytes, cancellationToken), errorResponseFunc);
-        }
-
-        protected async Task<TResponse> HeadRequestAsync<TResponse>(string uri,
-            Func<ApiResponse, TResponse> errorResponseFunc, WebHeaderCollection additionalHeaders = null,
-            RequestOptionsBase options = null, CancellationToken cancellationToken = default)
-        {
-            uri = ModifyUriForOptionsValues(uri, options);
-
-            return await DoRequestAsync(() => Transport.HeadAsync(uri, additionalHeaders ?? new WebHeaderCollection(), cancellationToken), errorResponseFunc);
         }
 
         protected async Task<TResponse> PutRequestAsync<TResponse>(string uri,
@@ -132,11 +126,12 @@ namespace ArangoDBNetStandard
         {
             uri = ModifyUriForOptionsValues(uri, options);
 
-            byte[] contentBytes = content != null ? GetContent(content, true, true) : new byte[0];
+            byte[] contentBytes = content != null ? GetContent(content, options?.ContentSerializationOptions?.CamelCasePropertyNames ?? true, options?.ContentSerializationOptions?.IgnoreNullValues ?? true) : new byte[0];
             return await DoRequestAsync(() => Transport.PutAsync(uri, contentBytes, cancellationToken), errorResponseFunc);
         }
 
-        protected async Task<TResponse> DoRequestAsync<TResponse>(Func<Task<IApiClientResponse>> requestFunc, Func<ApiResponse, TResponse> errorResponseFunc)
+        protected async Task<TResponse> DoRequestAsync<TResponse>(Func<Task<IApiClientResponse>> requestFunc,
+            Func<ApiResponse, TResponse> errorResponseFunc)
         {
             using (var response = await requestFunc())
             {
@@ -145,7 +140,7 @@ namespace ArangoDBNetStandard
                     var stream = await response.Content.ReadAsStreamAsync();
                     return DeserializeJsonFromStream<TResponse>(stream);
                 }
-                
+
                 return errorResponseFunc(await GetApiErrorResponse(response));
             }
         }

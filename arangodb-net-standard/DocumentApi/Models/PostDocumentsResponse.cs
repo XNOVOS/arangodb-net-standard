@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using ArangoDBNetStandard.Models;
 
 namespace ArangoDBNetStandard.DocumentApi.Models
 {

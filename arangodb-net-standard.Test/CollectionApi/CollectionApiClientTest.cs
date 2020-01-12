@@ -56,7 +56,7 @@ namespace ArangoDBNetStandardTest.CollectionApi
 
             var ex = await Assert.ThrowsAsync<ApiErrorException>(async () =>
                 await _collectionApi.DeleteCollectionAsync("NotACollection"));
-            Assert.Equal(1203, ex.ApiError.ErrorNum);
+            Assert.Equal(1203, ex.ResponseDetails.ErrorNum);
         }
 
         [Fact]
@@ -131,7 +131,7 @@ namespace ArangoDBNetStandardTest.CollectionApi
             };
             await _collectionApi.PostCollectionAsync(request);
             var ex = await Assert.ThrowsAsync<ApiErrorException>(async () => await _collectionApi.PostCollectionAsync(request));
-            Assert.Equal(1207, ex.ApiError.ErrorNum);
+            Assert.Equal(1207, ex.ResponseDetails.ErrorNum);
         }
 
         [Fact]
@@ -158,7 +158,7 @@ namespace ArangoDBNetStandardTest.CollectionApi
                 Name = "My collection name with spaces"
             };
             var ex = await Assert.ThrowsAsync<ApiErrorException>(async () => await _collectionApi.PostCollectionAsync(request));
-            Assert.Equal(1208, ex.ApiError.ErrorNum);
+            Assert.Equal(1208, ex.ResponseDetails.ErrorNum);
         }
 
         [Fact]
@@ -213,7 +213,7 @@ namespace ArangoDBNetStandardTest.CollectionApi
             var ex = await Assert.ThrowsAsync<ApiErrorException>(async () =>
                 await _collectionApi.TruncateCollectionAsync("NotACollection"));
 
-            Assert.Equal(1203, ex.ApiError.ErrorNum);
+            Assert.Equal(1203, ex.ResponseDetails.ErrorNum);
         }
 
         [Fact]
@@ -229,7 +229,7 @@ namespace ArangoDBNetStandardTest.CollectionApi
         [Fact]
         public async Task GetCollectionCountAsync_ShouldSucceed()
         {
-            var newDoc = await _adb.Document.PostDocumentAsync(_testCollection, new PostDocumentsQuery());
+            var newDoc = await _adb.Document.PostDocumentAsync(_testCollection, new PostDocumentsOptions());
             var response = await _collectionApi.GetCollectionCountAsync(_testCollection);
 
             Assert.Equal(HttpStatusCode.OK, response.ResponseDetails.Code);
@@ -253,7 +253,7 @@ namespace ArangoDBNetStandardTest.CollectionApi
             _collectionApi.ThrowErrorsAsExceptions = true;
             var exception = await Assert.ThrowsAsync<ApiErrorException>(async () =>
                 await _collectionApi.GetCollectionCountAsync("bogusCollection"));
-            Assert.Equal(HttpStatusCode.NotFound, exception.ApiError.Code);
+            Assert.Equal(HttpStatusCode.NotFound, exception.ResponseDetails.Code);
         }
 
         [Fact]
@@ -269,7 +269,7 @@ namespace ArangoDBNetStandardTest.CollectionApi
         [Fact]
         public async Task GetCollectionsAsync_ShouldSucceed()
         {
-            var response = await _collectionApi.GetCollectionsAsync(new GetCollectionsQuery
+            var response = await _collectionApi.GetCollectionsAsync(new GetCollectionsOptions
             {
                 ExcludeSystem = true // System adds 9 collections that we don't need to test
             });
@@ -295,7 +295,7 @@ namespace ArangoDBNetStandardTest.CollectionApi
             _collectionApi.ThrowErrorsAsExceptions = true;
             var ex = await Assert.ThrowsAsync<ApiErrorException>(async () => await _collectionApi.GetCollectionAsync("MyWrongCollection"));
 
-            Assert.Equal(HttpStatusCode.NotFound, ex.ApiError.Code);
+            Assert.Equal(HttpStatusCode.NotFound, ex.ResponseDetails.Code);
         }
 
         [Fact]
@@ -357,8 +357,8 @@ namespace ArangoDBNetStandardTest.CollectionApi
                     Name = "testingCollection"
                 });
             });
-            Assert.Equal(HttpStatusCode.NotFound, exception.ApiError.Code);
-            Assert.Equal(1203, exception.ApiError.ErrorNum); // ARANGO_DATA_SOURCE_NOT_FOUND
+            Assert.Equal(HttpStatusCode.NotFound, exception.ResponseDetails.Code);
+            Assert.Equal(1203, exception.ResponseDetails.ErrorNum); // ARANGO_DATA_SOURCE_NOT_FOUND
         }
 
         [Fact]
@@ -386,7 +386,7 @@ namespace ArangoDBNetStandardTest.CollectionApi
                     Name = "Bad Collection Name"
                 });
             });
-            Assert.Equal(1208, exception.ApiError.ErrorNum); // Arango Illegal Name
+            Assert.Equal(1208, exception.ResponseDetails.ErrorNum); // Arango Illegal Name
         }
 
         [Fact]
@@ -413,7 +413,7 @@ namespace ArangoDBNetStandardTest.CollectionApi
                     Name = "testingCollection"
                 });
             });
-            Assert.Equal(1203, exception.ApiError.ErrorNum); // Arango Data Source Not Found
+            Assert.Equal(1203, exception.ResponseDetails.ErrorNum); // Arango Data Source Not Found
         }
 
         [Fact]
@@ -447,7 +447,7 @@ namespace ArangoDBNetStandardTest.CollectionApi
             _collectionApi.ThrowErrorsAsExceptions = true;
             var exception = await Assert.ThrowsAsync<ApiErrorException>(async () =>
                 await _collectionApi.GetCollectionRevisionAsync("bogusCollection"));
-            Assert.Equal(HttpStatusCode.NotFound, exception.ApiError.Code);
+            Assert.Equal(HttpStatusCode.NotFound, exception.ResponseDetails.Code);
         }
 
         [Fact]
@@ -490,8 +490,8 @@ namespace ArangoDBNetStandardTest.CollectionApi
             };
             var exception = await Assert.ThrowsAsync<ApiErrorException>(async () => await _collectionApi.PutCollectionPropertyAsync("bogusCollection", body));
 
-            Assert.Equal(HttpStatusCode.NotFound, exception.ApiError.Code);
-            Assert.Equal(1203, exception.ApiError.ErrorNum); // ARANGO_DATA_SOURCE_NOT_FOUND
+            Assert.Equal(HttpStatusCode.NotFound, exception.ResponseDetails.Code);
+            Assert.Equal(1203, exception.ResponseDetails.ErrorNum); // ARANGO_DATA_SOURCE_NOT_FOUND
         }
 
         [Fact]
@@ -523,7 +523,7 @@ namespace ArangoDBNetStandardTest.CollectionApi
         {
             _collectionApi.ThrowErrorsAsExceptions = true;
             var exception = await Assert.ThrowsAsync<ApiErrorException>(async () => await _collectionApi.GetCollectionFiguresAsync("bogusCollection"));
-            Assert.Equal(HttpStatusCode.NotFound, exception.ApiError.Code);
+            Assert.Equal(HttpStatusCode.NotFound, exception.ResponseDetails.Code);
         }
 
         [Fact]

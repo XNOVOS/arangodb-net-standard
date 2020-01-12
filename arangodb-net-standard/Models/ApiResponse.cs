@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace ArangoDBNetStandard
+namespace ArangoDBNetStandard.Models
 {
     /// <summary>
     /// ArangoDB API error model
